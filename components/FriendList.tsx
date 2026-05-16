@@ -21,7 +21,16 @@ export default function FriendList() {
 
   const [showModal, setShowModal] = useState(false);
   const [codeInput, setCodeInput] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [addedCodes, setAddedCodes] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem("lgs-kasifi-friends") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
 
   // 30s polling: arkadaş skorlarını hafifçe değiştir (Supabase'e kadar simüle)
   const [fakeFriends, setFakeFriends] = useState(BASE_FRIENDS);
@@ -60,11 +69,36 @@ export default function FriendList() {
   ].sort((a, b) => b.score - a.score);
 
   function handleAddFriend() {
-    if (!codeInput.trim()) return;
-    const name = codeInput.startsWith("KAS-") ? "Arkadaşın" : "Kullanıcı";
+    setCodeError(null);
+    const code = codeInput.trim().toUpperCase();
+    if (!code) {
+      setCodeError("Lütfen bir davet kodu gir.");
+      return;
+    }
+    // Format kontrolü: KAS- ile başlamalı + 6 karakter (harf/rakam) + kendi kodun olmasın
+    const validFormat = /^KAS-[A-Z0-9]{6}$/.test(code);
+    if (!validFormat) {
+      setCodeError("Geçersiz format. Örnek: KAS-7X9Q2A");
+      return;
+    }
+    if (user?.inviteCode && code === user.inviteCode) {
+      setCodeError("Kendi kodunu giremezsin 🙂");
+      return;
+    }
+    if (addedCodes.includes(code)) {
+      setCodeError("Bu arkadaşı zaten eklemişsin.");
+      return;
+    }
+    const next = [...addedCodes, code];
+    setAddedCodes(next);
+    try {
+      localStorage.setItem("lgs-kasifi-friends", JSON.stringify(next));
+    } catch {
+      /* sessizce yut */
+    }
     setShowModal(false);
     setCodeInput("");
-    setToast(`${name} eklendi! 🎉`);
+    setToast(`Arkadaşın (${code}) eklendi! 🎉`);
     setTimeout(() => setToast(null), 3000);
   }
 
@@ -164,11 +198,21 @@ export default function FriendList() {
             <p className="text-[13px] text-ink-500 mb-4">Arkadaşının davet kodunu gir (örn: KAS-AB3XY7)</p>
             <input
               value={codeInput}
-              onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                setCodeInput(e.target.value.toUpperCase());
+                if (codeError) setCodeError(null);
+              }}
               placeholder="KAS-······"
-              className="w-full px-4 py-3 rounded-xl border border-ink-200 bg-paper text-ink-900 font-mono font-bold text-center text-lg focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 tracking-widest transition"
+              className={`w-full px-4 py-3 rounded-xl border bg-paper text-ink-900 font-mono font-bold text-center text-lg focus:outline-none focus:ring-2 tracking-widest transition ${
+                codeError
+                  ? "border-coral-500 focus:border-coral-500 focus:ring-coral-500/20"
+                  : "border-ink-200 focus:border-brand-500 focus:ring-brand-500/20"
+              }`}
               maxLength={10}
             />
+            {codeError && (
+              <p className="mt-2 text-[12px] text-coral-600 font-semibold">{codeError}</p>
+            )}
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() => setShowModal(false)}
@@ -178,7 +222,7 @@ export default function FriendList() {
               </button>
               <button
                 onClick={handleAddFriend}
-                disabled={codeInput.length < 3}
+                disabled={codeInput.length === 0}
                 className="flex-1 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-40 text-white text-sm font-semibold flex items-center justify-center gap-2 transition"
               >
                 <Check className="w-4 h-4" />

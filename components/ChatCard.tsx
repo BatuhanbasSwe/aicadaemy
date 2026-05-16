@@ -345,7 +345,34 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
           <div className="text-[11.5px] text-ink-500 truncate">{charMeta.subject}</div>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <button className="w-9 h-9 rounded-lg hover:bg-ink-100 flex items-center justify-center text-ink-500" title="Sesle oku">
+          <button
+            onClick={() => {
+              if (typeof window === "undefined") return;
+              const synth = window.speechSynthesis;
+              if (!synth) {
+                alert("Tarayıcın sesli okumayı desteklemiyor.");
+                return;
+              }
+              // Konuşmayı sıfırla, son karakter mesajını oku
+              synth.cancel();
+              const target = [...messages].reverse().find((m) => m.role === "character");
+              if (!target) {
+                alert("Henüz okunacak bir mesaj yok. Önce karakterle bir sohbet başlat.");
+                return;
+              }
+              const u = new SpeechSynthesisUtterance(target.content);
+              u.lang = "tr-TR";
+              u.rate = 1.0;
+              u.pitch = 1.0;
+              // tr-TR sesi varsa onu kullan
+              const voices = synth.getVoices();
+              const tr = voices.find((v) => v.lang?.startsWith("tr"));
+              if (tr) u.voice = tr;
+              synth.speak(u);
+            }}
+            className="w-9 h-9 rounded-lg hover:bg-ink-100 flex items-center justify-center text-ink-500"
+            title="Son karakter mesajını sesli oku"
+          >
             <Volume2 className="w-4 h-4" />
           </button>
           <button
@@ -355,7 +382,13 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
           >
             <RefreshCw className="w-4 h-4" />
           </button>
-          <button className="w-9 h-9 rounded-lg hover:bg-ink-100 flex items-center justify-center text-ink-500">
+          <button
+            onClick={() => {
+              if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+            }}
+            title="Sesli okumayı durdur"
+            className="w-9 h-9 rounded-lg hover:bg-ink-100 flex items-center justify-center text-ink-500"
+          >
             <MoreVertical className="w-4 h-4" />
           </button>
         </div>

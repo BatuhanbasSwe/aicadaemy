@@ -97,19 +97,19 @@
 
 ## ✅ Detaylı Görev Listesi
 
-### 🟦 Faz 0 — Kurulum
+### 🟦 Faz 0 — Kurulum  ✅ TAMAM
 
 #### Görev 1: Proje iskeletini kur
-- [ ] Next.js 14 (App Router) + TypeScript projesi oluştur
-- [ ] TailwindCSS kur ve test et
-- [ ] GitHub repo aç, ilk commit
-- [ ] Vercel'e bağla, boş deploy başarılı olsun
-- [ ] Google AI Studio'dan Gemini API key al
-- [ ] `.env.local` dosyası + `.env.example` ekle
-- [ ] Vercel'e ortam değişkenlerini de gir
-- [ ] `/api/test` route ile Gemini "merhaba" testi yap
-- [ ] Klasör yapısı oluştur: `/app`, `/components`, `/lib/gemini`, `/lib/content`, `/lib/types`, `/lib/store`
-- [ ] `lib/types/index.ts` içinde temel TypeScript tipleri (Character, Adventure, TreeNode, LgsQuestion, ChatMessage)
+- [x] Next.js 16 (App Router) + TypeScript projesi oluştur
+- [x] TailwindCSS v4 kur
+- [x] GitHub repo aç, ilk commit
+- [ ] ~~Vercel'e bağla, boş deploy başarılı olsun~~  *(deploy henüz yapılmadı — Faz 6'da)*
+- [x] Google AI Studio'dan Gemini API key al
+- [x] `.env.local` dosyası + `.env.example` ekle
+- [ ] ~~Vercel'e ortam değişkenlerini de gir~~  *(Faz 6'da)*
+- [x] `/api/test` route ile Gemini "merhaba" testi yap (✓ gemini-2.5-flash)
+- [x] Klasör yapısı oluştur: `/app`, `/components`, `/lib/gemini`, `/lib/content`, `/lib/types`, `/lib/store`
+- [x] `lib/types/index.ts` içinde temel TypeScript tipleri (Character, Adventure, TreeNode, LgsQuestion, ChatMessage, ChatApiRequest/Response, FakeFriend)
 
 ---
 
@@ -503,3 +503,112 @@
 > **Motto:** "Mükemmel değil, demo edilebilir." — bir özelliği 3 saatte mükemmel yapacağına 1 saatte çalışır hale getir, kalan zamanı başka göreve aktar.
 
 **Bol şans! 🚀**
+
+---
+
+# 📊 DURUM RAPORU (Son Güncelleme: 2026-05-17)
+
+Yukarıdaki checkbox listeleri orijinal spec'in günlüğüdür. Bu bölüm **şu an itibariyle** neyin gerçekten bittiğini ve neyin kaldığını özetler.
+
+## ✅ BİTTİ (Demo'ya hazır)
+
+### Backend & İçerik
+- [x] **Next.js 16 + TS + Tailwind v4 scaffold** + GitHub repo (`BatuhanbasSwe/aicadaemy`)
+- [x] **Paylaşılan kontratlar:** `lib/types/index.ts` (her tip), `lib/store/useGameStore.ts` (Zustand + localStorage persist + 3 extra action: `ingestChatTurn`, `addStarred`, `addLgsCorrectNode`)
+- [x] **Gemini client + smoke test** (`gemini-2.5-flash`)
+- [x] **6 karakter persona** (Atatürk + Cahit Arf detaylı, diğer 4 minimal) — `lib/content/characters.ts`
+- [x] **6 macera senaryosu** (2 detaylı + 4 iskelet) — `lib/content/adventures.ts`
+- [x] **5 LGS sorusu** (3 mat + 2 inkılap, MEB stilinde) — `lib/content/lgs-questions.ts`
+- [x] **Sahte arkadaş datası** (Supabase yerine) — `lib/content/fake-friends.ts`
+- [x] **POST `/api/chat`** — Gemini structured output (responseSchema), karakter persona + macera inject, LGS soru ID döndürme
+- [x] **GET `/api/chat?lgsId=...`** — tek LGS sorusu çekme
+- [x] **Pitch deck** (markdown, 5 slayt + jüri Q&A) — `docs/pitch-deck.md`
+
+### Frontend (arkadaş + bizim entegrasyonlar)
+- [x] **Onboarding** (4 adım: kullanıcı adı + sınıf + ders + rehber + KAS-XXXXXX davet kodu)
+- [x] **Chat ekranı:** Sidebar nav (Anasayfa / Görevler / Konular / Lig / Arkadaşlar / Profil + Genel: Hedeflerim / Takvim / Bildirimler) + Topbar (arama, bell, mail, avatar) + mobile bottom nav
+- [x] **ChatCard:** Gemini /api/chat'e bağlı, follow-up buton'ları, typing indicator, mesaj geçmişi
+- [x] **CuriosityTree (D3.js):** 5 düğüm tipi (root/opened/suggested/starred/lgs_correct), düğüm tıklama → chat'e mesaj
+- [x] **LgsQuestionCard:** Şık seçimi + konfeti + skor güncelleme + bizim 5 gerçek LGS sorusuna bağlandı (stub yerine)
+- [x] **ScorePanel + TasksCard + FriendList** (hepsi bağlı)
+
+### En son düzelttiklerim (2026-05-17)
+- [x] **Konular > "Devam et"** — karakter set + Anasayfa + ChatCard'a otomatik mesaj
+- [x] **Sidebar > Genel:** Hedeflerim (yeni `goals` sayfası), Takvim (Görevler'e), Bildirimler (slideout drawer)
+- [x] **NotificationsDrawer** — sağdan kayan panel, 5 sahte bildirim
+- [x] **Topbar Bell + Mail** — drawer açar; Avatar → Profil
+- [x] **Lig > "Hızlı soru çözmeye başla"** — Anasayfa + LGS sorusu tetikler
+- [x] **Lig > Davet kodu "Kopyala"** — clipboard API + feedback
+- [x] **ChatCard'da sesli okuma butonu** (Web Speech API tr-TR)
+- [x] **FriendList'te davet kodu validation** — `^KAS-[A-Z0-9]{6}$` regex + duplicate engelleme + kendi kodu engelleme
+- [x] **Görev ekleme formunda tarih + saat input** (HTML5 native, "Bugün/Yarın/Çar/12.05" otomatik etiketleme)
+- [x] **Hedeflerim sayfası** (`/goals`): günlük + haftalık + kişisel hedefler, GoalProgressBar, kişisel hedef ekleme/silme (localStorage)
+- [x] **Profil zenginleştirildi:** DiceBear anime avatar (8 stil arasından seçim + rastgele yeniden), streak counter (localStorage tabanlı, günlük tick), XP, rütbe sistemi (Yeni Kâşif → Bronz/Gümüş/Altın Pusula), 4 büyük stat kartı, mevcut rehber kartı
+- [x] **Günün Yarışması** (`DailyChallenge.tsx`): 5 sabit LGS sorusu herkese, süre ölçümü, skor = doğru×1000 − saniye×10, sonuçlar localStorage'a, sahte rakiplerle liderlik tablosu, "Sıfırla" butonu (demo için)
+- [x] **Sahte arkadaş simülasyonu** (FriendList) — 30 sn'de bir skorlar artar, "Ayşe seni geçti!" bannerı
+
+---
+
+## ⛔ KALDI (Demo öncesi yapılacak)
+
+### 🚀 Kritik (deploy + sunum)
+- [ ] **Vercel production deploy** — repo'yu Vercel'e bağla, `GEMINI_API_KEY` env var ekle
+- [ ] **Production URL üzerinden E2E test** — onboarding → chat → ağaç → LGS → Lig yarışması → arkadaş ekle
+- [ ] **Pitch deck markdown → .pptx/Google Slides** (zaten içerik hazır, sadece tasarıma aktar)
+- [ ] **3 dakika demo provası** (en az 2 kere)
+- [ ] **Backup demo videosu** (ekran kaydı, demo çökerse oynat)
+
+### 🟡 Edge case'ler (önemli ama hayat-memat değil)
+- [ ] Gemini timeout → kullanıcıya nazik mesaj (kısmen var: ChatCard fallback'i sahte cevap döner)
+- [ ] Mobile responsive son cila (chat ekranı küçük ekranda nasıl?)
+- [ ] Karanlık mod **GEREKMİYOR** (atlandı, doğru karar)
+
+### 🟢 v2 — Hackathon Sonrası Vizyon (pitch deck'te bahsedilecek)
+- [ ] **Görev 21 — Veli paneli** (hesap, dashboard, içerik filtresi, bildirimler) ~2-3 hafta
+- [ ] **Görev 22 — Kurum/dershane admin paneli** (öğrenci davet, öğretmen görev atama, kurum liderliği) ~3-4 hafta
+- [ ] **Görev 23 — Forum + AI moderatör** (konu bazlı kanallar, Gemini moderation) ~3-4 hafta
+- [ ] **Görev 24 — OGM ders kitabı entegrasyonu** (PDF→embedding, kitap×soru eşleştirme, RAG) ~4-6 hafta
+- [ ] **Gerçek Supabase backend** (şu an hard-coded sahte arkadaş modu — sunumda "kod hazır, demo'da lokal" denir)
+
+### 📋 İçerik genişletme (ileride)
+- [ ] LGS sorusu sayısı 5 → 50+ (her ders için 8+ soru)
+- [ ] 4 minimal karakter (Aziz Sancar, Yunus Emre, Mevlana, Shakespeare) için detaylı persona genişletme
+- [ ] Daha fazla macera (her karakter için 2-3 macera)
+
+---
+
+## 📂 Şu anki repo durumu
+
+```
+✅ Backend dosyaları (Sen-B yaptı):
+   lib/types/index.ts
+   lib/store/useGameStore.ts
+   lib/content/characters.ts        (6 karakter)
+   lib/content/adventures.ts        (6 macera)
+   lib/content/lgs-questions.ts     (5 soru + helpers)
+   lib/content/fake-friends.ts
+   lib/gemini/client.ts
+   lib/gemini/buildPrompt.ts
+   app/api/chat/route.ts            (POST + GET)
+   app/api/test/route.ts
+   docs/pitch-deck.md
+
+✅ Frontend dosyaları (Arkadaş yaptı + benim wiring/refactor'ım):
+   app/page.tsx
+   app/layout.tsx
+   app/globals.css
+   app/onboarding/page.tsx
+   app/chat/page.tsx                (büyük shell + Sidebar/Topbar/HomeView/TasksView/TopicsView/LeagueView/GoalsView/FriendsView/ProfileView)
+   components/ChatCard.tsx
+   components/CuriosityTree.tsx
+   components/LgsQuestionCard.tsx
+   components/ScorePanel.tsx
+   components/TasksCard.tsx
+   components/FriendList.tsx
+   components/NotificationsDrawer.tsx  (yeni)
+   components/DailyChallenge.tsx       (yeni)
+```
+
+---
+
+**Sonraki adım:** Browser'da gez, bozuk gördüğün her şeyi söyle → Vercel deploy → pitch deck slayt → demo provası.

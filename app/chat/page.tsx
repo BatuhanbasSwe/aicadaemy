@@ -8,11 +8,13 @@ import CuriosityTree from "@/components/CuriosityTree";
 import TasksCard from "@/components/TasksCard";
 import FriendList from "@/components/FriendList";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
+import DailyChallenge from "@/components/DailyChallenge";
 import {
   Compass, Home, ListChecks, BookOpen, Trophy, Users, User,
   Search, Bell, Mail, Flame, Target, Calendar,
   Plus, Check, Clock, Timer, Zap, ArrowRight,
   Crown, Lightbulb, FileQuestion, GitBranch,
+  Sparkles, Copy, RefreshCw,
 } from "lucide-react";
 
 /* ── Character info ─────────────────────────────────────── */
@@ -25,7 +27,7 @@ const CHAR_META: Record<CharacterId, { name: string; subject: string }> = {
   shakespeare: { name: "William Shakespeare",        subject: "İngilizce" },
 };
 
-type PageId = "home" | "tasks" | "topics" | "league" | "friends" | "profile";
+type PageId = "home" | "tasks" | "topics" | "league" | "friends" | "profile" | "goals";
 
 const NAV: { id: PageId; label: string; Icon: React.ElementType; badge?: number }[] = [
   { id: "home",    label: "Anasayfa",   Icon: Home },
@@ -43,6 +45,7 @@ const PAGE_META: Record<PageId, { title: string; subtitle: string }> = {
   league:  { title: "Lig",        subtitle: "Altın Lig · Haftalık sıralama" },
   friends: { title: "Arkadaşlar", subtitle: "Birlikte çalış, birlikte yüksel" },
   profile: { title: "Profil",     subtitle: "Hesabın ve istatistiklerin" },
+  goals:   { title: "Hedeflerim", subtitle: "Günlük ve haftalık hedefler" },
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -102,7 +105,7 @@ function Sidebar({
         <div className="px-2 mt-6 mb-1.5 text-[10.5px] uppercase tracking-[0.18em] text-white/35 font-semibold">Genel</div>
         <div className="space-y-0.5">
           {[
-            { label: "Hedeflerim", Icon: Target,   onClick: () => onChange("profile") },
+            { label: "Hedeflerim", Icon: Target,   onClick: () => onChange("goals") },
             { label: "Takvim",     Icon: Calendar, onClick: () => onChange("tasks") },
             { label: "Bildirimler",Icon: Bell,     onClick: onOpenNotifications },
           ].map(({ label, Icon, onClick }) => (
@@ -298,6 +301,8 @@ function TasksView() {
   const [tab, setTab] = useState<"today" | "week" | "all">("today");
   const [filter, setFilter] = useState<"all" | "active" | "done">("all");
   const [newTitle, setNewTitle] = useState("");
+  const [newDueDate, setNewDueDate] = useState("");
+  const [newDueTime, setNewDueTime] = useState("");
 
   const toggleTask = (id: number) =>
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
@@ -316,11 +321,55 @@ function TasksView() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
+
+    // Tarih+saat formatla
+    let dueLabel: string | null = null;
+    let dayBucket: "today" | "week" = "today";
+    if (newDueDate) {
+      const d = new Date(newDueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const endOfWeek = new Date(today);
+      endOfWeek.setDate(today.getDate() + 7);
+
+      if (d.toDateString() === today.toDateString()) {
+        dueLabel = newDueTime || "Bugün";
+        dayBucket = "today";
+      } else if (d.toDateString() === tomorrow.toDateString()) {
+        dueLabel = newDueTime ? `Yarın ${newDueTime}` : "Yarın";
+        dayBucket = "week";
+      } else if (d <= endOfWeek) {
+        const dayNames = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
+        dueLabel = newDueTime ? `${dayNames[d.getDay()]} ${newDueTime}` : dayNames[d.getDay()];
+        dayBucket = "week";
+      } else {
+        dueLabel = d.toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit" });
+        dayBucket = "week";
+      }
+    } else if (newDueTime) {
+      dueLabel = newDueTime;
+    }
+
     setTasks((ts) => [
       ...ts,
-      { id: Date.now(), title: newTitle.trim(), subject: "Genel", chip: "bg-brand-50 text-brand-700", xp: 20, due: null, est: "10 dk", done: false, priority: "med" as const, day: "today" },
+      {
+        id: Date.now(),
+        title: newTitle.trim(),
+        subject: "Genel",
+        chip: "bg-brand-50 text-brand-700",
+        xp: 20,
+        due: dueLabel,
+        est: "10 dk",
+        done: false,
+        priority: "med" as const,
+        day: dayBucket,
+      },
     ]);
     setNewTitle("");
+    setNewDueDate("");
+    setNewDueTime("");
   };
 
   return (
@@ -366,25 +415,47 @@ function TasksView() {
           </div>
 
           {/* Add task form */}
-          <form onSubmit={submit} className="bg-white border border-ink-200 rounded-xl p-2 flex items-center gap-2 shadow-card">
-            <div className="w-9 h-9 rounded-lg bg-ink-100 flex items-center justify-center text-ink-500 shrink-0">
-              <Plus className="w-4 h-4" strokeWidth={2.5} />
+          <form onSubmit={submit} className="bg-white border border-ink-200 rounded-xl p-2 shadow-card flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="flex items-center gap-2 flex-1">
+              <div className="w-9 h-9 rounded-lg bg-ink-100 flex items-center justify-center text-ink-500 shrink-0">
+                <Plus className="w-4 h-4" strokeWidth={2.5} />
+              </div>
+              <input
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Yeni görev ekle…"
+                className="flex-1 bg-transparent text-[13px] text-ink-900 placeholder-ink-400 focus:outline-none px-1 min-w-0"
+              />
             </div>
-            <input
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Yeni görev ekle…"
-              className="flex-1 bg-transparent text-[13px] text-ink-900 placeholder-ink-400 focus:outline-none px-1"
-            />
-            <button
-              type="submit"
-              disabled={!newTitle.trim()}
-              className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition ${
-                newTitle.trim() ? "bg-ink-900 hover:bg-ink-700 text-white" : "bg-ink-100 text-ink-400 cursor-not-allowed"
-              }`}
-            >
-              Ekle
-            </button>
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1.5 text-[11px] text-ink-500" title="Son tarih">
+                <Calendar className="w-3.5 h-3.5 shrink-0" />
+                <input
+                  type="date"
+                  value={newDueDate}
+                  onChange={(e) => setNewDueDate(e.target.value)}
+                  className="bg-ink-100/60 hover:bg-ink-100 px-2 py-1 rounded-md text-[12px] text-ink-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+                />
+              </label>
+              <label className="flex items-center gap-1.5 text-[11px] text-ink-500" title="Son saat">
+                <Clock className="w-3.5 h-3.5 shrink-0" />
+                <input
+                  type="time"
+                  value={newDueTime}
+                  onChange={(e) => setNewDueTime(e.target.value)}
+                  className="bg-ink-100/60 hover:bg-ink-100 px-2 py-1 rounded-md text-[12px] text-ink-900 font-medium focus:outline-none focus:ring-2 focus:ring-brand-500/30 w-[88px]"
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={!newTitle.trim()}
+                className={`px-3 py-1.5 rounded-lg text-[12px] font-semibold transition shrink-0 ${
+                  newTitle.trim() ? "bg-ink-900 hover:bg-ink-700 text-white" : "bg-ink-100 text-ink-400 cursor-not-allowed"
+                }`}
+              >
+                Ekle
+              </button>
+            </div>
           </form>
 
           {/* Task list */}
@@ -606,6 +677,11 @@ function LeagueView({ onStartQuickLgs }: { onStartQuickLgs: () => void }) {
 
   return (
     <div className="h-full overflow-y-auto nice-scroll px-6 py-4">
+      {/* Günün Yarışması — herkese aynı 5 soru */}
+      <div className="max-w-7xl mb-4">
+        <DailyChallenge username={user?.username ?? "Sen"} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl">
         <div className="lg:col-span-2 bg-white border border-ink-200 rounded-2xl shadow-card overflow-hidden">
           <div className="px-5 py-4 border-b border-ink-200 flex items-center justify-between">
@@ -714,6 +790,182 @@ function LeagueView({ onStartQuickLgs }: { onStartQuickLgs: () => void }) {
 }
 
 /* ══════════════════════════════════════════════════════════
+   GOALS VIEW — Hedeflerim
+   ══════════════════════════════════════════════════════════ */
+function GoalProgressBar({
+  label, value, target, accent,
+}: { label: string; value: number; target: number; accent: string }) {
+  const pct = Math.min(100, Math.round((value / target) * 100));
+  return (
+    <div>
+      <div className="flex items-baseline justify-between mb-1.5">
+        <span className="text-[12.5px] font-semibold text-ink-700">{label}</span>
+        <span className="text-[11.5px] text-ink-500 tabular-nums">
+          <strong className="text-ink-900">{value}</strong> / {target}
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-ink-100 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${pct}%`, background: accent }}
+        />
+      </div>
+      <div className="text-[10.5px] text-ink-400 mt-1 font-mono">%{pct}</div>
+    </div>
+  );
+}
+
+function GoalsView() {
+  const score = useGameStore((s) => s.score);
+  const user = useGameStore((s) => s.user);
+  const xpDaily = score.nodesOpened * 30 + score.lgsCorrect * 50;
+
+  const [customGoal, setCustomGoal] = useState("");
+  const [customGoals, setCustomGoals] = useState<string[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(localStorage.getItem("lgs-kasifi-goals") ?? "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const addCustom = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customGoal.trim()) return;
+    const next = [customGoal.trim(), ...customGoals].slice(0, 10);
+    setCustomGoals(next);
+    setCustomGoal("");
+    try {
+      localStorage.setItem("lgs-kasifi-goals", JSON.stringify(next));
+    } catch { /* */ }
+  };
+
+  const removeCustom = (idx: number) => {
+    const next = customGoals.filter((_, i) => i !== idx);
+    setCustomGoals(next);
+    try {
+      localStorage.setItem("lgs-kasifi-goals", JSON.stringify(next));
+    } catch { /* */ }
+  };
+
+  return (
+    <div className="h-full overflow-y-auto nice-scroll px-6 py-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-7xl">
+        {/* Daily goals */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center">
+                <Target className="w-[18px] h-[18px] text-brand-600" strokeWidth={2.2} />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-[15px] text-ink-900 tracking-tight">Bugünkü Hedeflerin</h3>
+                <p className="text-[11px] text-ink-500">Her gün sıfırlanır</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <GoalProgressBar label="🌿 Düğüm aç" value={score.nodesOpened} target={10} accent="#6B57DC" />
+              <GoalProgressBar label="📝 LGS sorusu çöz" value={score.lgsAnswered} target={20} accent="#5E8BC3" />
+              <GoalProgressBar label="✅ Doğru cevap"  value={score.lgsCorrect} target={15} accent="#3FAE82" />
+              <GoalProgressBar label="⚡ Günlük XP"    value={xpDaily}            target={500} accent="#E8B83A" />
+            </div>
+          </div>
+
+          {/* Weekly */}
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-xl bg-coral-100 flex items-center justify-center">
+                <Calendar className="w-[18px] h-[18px] text-coral-600" strokeWidth={2.2} />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-[15px] text-ink-900 tracking-tight">Bu Haftanın Hedefleri</h3>
+                <p className="text-[11px] text-ink-500">Pazar gece sıfırlanır</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <GoalProgressBar label="🔥 7 gün üst üste çalış" value={1} target={7} accent="#E58A5A" />
+              <GoalProgressBar label="🌳 50 düğüm aç" value={score.nodesOpened} target={50} accent="#6B57DC" />
+              <GoalProgressBar label="🏆 Lig'te ilk 3'e gir"   value={2} target={3} accent="#E8B83A" />
+            </div>
+          </div>
+
+          {/* Custom goals */}
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-9 h-9 rounded-xl bg-sun-100 flex items-center justify-center">
+                <Lightbulb className="w-[18px] h-[18px] text-sun-500" strokeWidth={2.2} />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-[15px] text-ink-900 tracking-tight">Kişisel Hedeflerin</h3>
+                <p className="text-[11px] text-ink-500">Sen ekle, sen takip et</p>
+              </div>
+            </div>
+            <form onSubmit={addCustom} className="flex items-center gap-2 mb-3">
+              <input
+                value={customGoal}
+                onChange={(e) => setCustomGoal(e.target.value)}
+                placeholder="Örn: Hafta sonu 30 paragraf çöz"
+                className="flex-1 px-3 py-2 rounded-lg border border-ink-200 bg-paper text-[13px] text-ink-900 placeholder-ink-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              />
+              <button
+                type="submit"
+                disabled={!customGoal.trim()}
+                className="px-3 py-2 rounded-lg bg-ink-900 text-white text-[12px] font-semibold disabled:opacity-40 hover:bg-ink-700 transition"
+              >
+                Ekle
+              </button>
+            </form>
+            {customGoals.length === 0 ? (
+              <div className="text-[12px] text-ink-500 italic py-2">Henüz kişisel hedef eklemedin.</div>
+            ) : (
+              <ul className="space-y-2">
+                {customGoals.map((g, i) => (
+                  <li key={`${i}-${g}`} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-ink-100/60 group">
+                    <span className="flex-1 text-[13px] text-ink-900">{g}</span>
+                    <button
+                      onClick={() => removeCustom(i)}
+                      className="text-[11px] text-ink-400 hover:text-coral-600 opacity-0 group-hover:opacity-100 transition"
+                      title="Sil"
+                    >
+                      Sil
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* Right rail */}
+        <div className="space-y-4">
+          <div className="bg-ink-950 text-white rounded-2xl p-5 relative overflow-hidden">
+            <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-sun-500/20 blur-3xl" />
+            <div className="relative">
+              <div className="text-[10px] uppercase tracking-widest text-white/60 font-semibold mb-1">Bu hafta</div>
+              <h3 className="font-display font-bold text-[15px] tracking-tight mb-1">Sıradaki ödülün</h3>
+              <p className="text-[11px] text-white/55 mb-3">Hedeflerinin %{Math.round((score.nodesOpened / 50) * 100)}'ini tamamladın.</p>
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-sun-500" strokeWidth={2.5} />
+                <span className="font-display font-bold text-[14px]">Altın Pusula</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <h3 className="font-display font-bold text-[14px] text-ink-900 tracking-tight mb-3">İpucu</h3>
+            <p className="text-[12.5px] text-ink-700 leading-relaxed">
+              Günlük küçük hedefler, büyük başarılar getirir.{" "}
+              <strong className="text-ink-900">{user?.username ?? "Kâşif"}</strong>, her gün 1 saat odaklan, ay sonunda farkı göreceksin.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
    FRIENDS VIEW — uses FriendList component
    ══════════════════════════════════════════════════════════ */
 function FriendsView() {
@@ -727,41 +979,290 @@ function FriendsView() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   PROFILE VIEW
+   PROFILE VIEW — anime avatar + streak + zengin istatistikler
    ══════════════════════════════════════════════════════════ */
+const AVATAR_STYLES = [
+  { id: "lorelei",          label: "Lorelei",       hint: "Şirin manga" },
+  { id: "adventurer",       label: "Adventurer",    hint: "Macera kahramanı" },
+  { id: "big-smile",        label: "Big Smile",     hint: "Güleryüz" },
+  { id: "fun-emoji",        label: "Fun Emoji",     hint: "Eğlenceli" },
+  { id: "miniavs",          label: "Mini Avatar",   hint: "Minik" },
+  { id: "notionists",       label: "Notion-stil",   hint: "Soft" },
+  { id: "personas",         label: "Persona",       hint: "Karakter" },
+  { id: "thumbs",           label: "Başparmak",     hint: "Quirky" },
+];
+
+function dicebearUrl(style: string, seed: string) {
+  // SVG, ücretsiz, hesap gerekmez
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
+}
+
 function ProfileView({ user, charInfo }: {
   user: { username: string; classLevel: number; inviteCode: string };
   charInfo: { name: string; subject: string };
 }) {
   const score = useGameStore((s) => s.score);
+
+  // Avatar tercihi localStorage'da: {style, seed}
+  type AvatarPref = { style: string; seed: string };
+  const defaultPref: AvatarPref = { style: "lorelei", seed: user.username };
+  const [avatar, setAvatar] = useState<AvatarPref>(() => {
+    if (typeof window === "undefined") return defaultPref;
+    try {
+      const raw = localStorage.getItem("lgs-kasifi-avatar");
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p?.style && p?.seed) return p;
+      }
+    } catch { /* */ }
+    return defaultPref;
+  });
+
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  const updateAvatar = (next: AvatarPref) => {
+    setAvatar(next);
+    try {
+      localStorage.setItem("lgs-kasifi-avatar", JSON.stringify(next));
+    } catch { /* */ }
+  };
+
+  const rerollSeed = () => {
+    updateAvatar({ ...avatar, seed: Math.random().toString(36).slice(2, 10) });
+  };
+
+  // Streak: localStorage'da son ziyaret günü saklanır
+  const [streak, setStreak] = useState<number>(() => {
+    if (typeof window === "undefined") return 1;
+    try {
+      const raw = localStorage.getItem("lgs-kasifi-streak");
+      const today = new Date().toDateString();
+      if (!raw) {
+        localStorage.setItem("lgs-kasifi-streak", JSON.stringify({ last: today, count: 1 }));
+        return 1;
+      }
+      const { last, count } = JSON.parse(raw);
+      if (last === today) return count;
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const newCount = last === yesterday.toDateString() ? count + 1 : 1;
+      localStorage.setItem("lgs-kasifi-streak", JSON.stringify({ last: today, count: newCount }));
+      return newCount;
+    } catch {
+      return 1;
+    }
+  });
+  // unused setter warning'i susturmak için no-op
+  void setStreak;
+
+  const totalXP = score.nodesOpened * 30 + score.lgsCorrect * 50;
+  const accuracy = score.lgsAnswered > 0
+    ? Math.round((score.lgsCorrect / score.lgsAnswered) * 100) : 0;
+  const rank =
+    totalXP > 3000 ? { name: "Altın Pusula", color: "#E8B83A", bg: "bg-sun-100", icon: Crown } :
+    totalXP > 1500 ? { name: "Gümüş Pusula", color: "#9CA3AF", bg: "bg-ink-100", icon: Trophy } :
+    totalXP > 500  ? { name: "Bronz Pusula", color: "#E58A5A", bg: "bg-coral-100", icon: Trophy } :
+                     { name: "Yeni Kâşif",   color: "#6B57DC", bg: "bg-brand-50", icon: Compass };
+  const RankIcon = rank.icon;
+
+  const copyCode = async () => {
+    try { await navigator.clipboard.writeText(user.inviteCode); } catch { /* */ }
+  };
+
   return (
     <div className="h-full overflow-y-auto nice-scroll px-6 py-4">
-      <div className="max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-6 sm:col-span-2">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-display font-bold text-2xl">
-              {user.username[0].toUpperCase()}
+      <div className="max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* HEADER CARD */}
+        <div className="lg:col-span-3 bg-white border border-ink-200 rounded-2xl shadow-card p-6 relative overflow-hidden">
+          <div className="absolute -right-24 -top-24 w-64 h-64 rounded-full bg-brand-500/8 blur-3xl" />
+          <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            {/* Avatar */}
+            <div className="relative shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={dicebearUrl(avatar.style, avatar.seed)}
+                alt="Avatar"
+                className="w-24 h-24 rounded-2xl bg-paper border-4 border-white shadow-pop"
+              />
+              <button
+                onClick={() => setPickerOpen((s) => !s)}
+                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-ink-900 hover:bg-ink-700 text-white flex items-center justify-center shadow-pop transition"
+                title="Avatarını değiştir"
+              >
+                <Sparkles className="w-4 h-4" />
+              </button>
             </div>
-            <div>
-              <h2 className="font-display font-bold text-xl text-ink-900">{user.username}</h2>
-              <div className="text-sm text-ink-500">{user.classLevel}. Sınıf Kâşifi</div>
-              <div className="text-xs font-mono text-brand-600 mt-1">{user.inviteCode}</div>
+
+            {/* Identity */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="font-display font-bold text-2xl text-ink-900 tracking-tight">{user.username}</h2>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${rank.bg}`} style={{ color: rank.color }}>
+                  <RankIcon className="w-3 h-3" strokeWidth={2.5} />
+                  {rank.name}
+                </span>
+              </div>
+              <div className="text-[13px] text-ink-500 mt-0.5">{user.classLevel}. Sınıf Kâşifi · Rehber: {charInfo.name}</div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral-100 border border-coral-500/30">
+                  <Flame className="w-4 h-4 text-coral-600" strokeWidth={2.5} />
+                  <div className="text-[12px]">
+                    <strong className="font-display font-bold text-ink-900 tabular-nums">{streak}</strong>
+                    <span className="text-ink-700 ml-1">günlük seri</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-sun-100 border border-sun-500/30">
+                  <Zap className="w-4 h-4 text-sun-500" strokeWidth={2.5} />
+                  <div className="text-[12px]">
+                    <strong className="font-display font-bold text-ink-900 tabular-nums">{totalXP}</strong>
+                    <span className="text-ink-700 ml-1">XP</span>
+                  </div>
+                </div>
+                <button
+                  onClick={copyCode}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-50 border border-brand-300/40 hover:bg-brand-100 transition group"
+                  title="Davet kodunu kopyala"
+                >
+                  <Copy className="w-3.5 h-3.5 text-brand-700" />
+                  <span className="text-[12px] font-mono font-bold text-brand-700">{user.inviteCode}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Avatar picker (collapsible) */}
+          {pickerOpen && (
+            <div className="relative mt-5 pt-5 border-t border-ink-200">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="font-display font-bold text-[14px] text-ink-900">Avatarını seç</div>
+                  <div className="text-[11px] text-ink-500">Bir stil seç, sonra "rastgele yeniden" ile yüzünü değiştir.</div>
+                </div>
+                <button
+                  onClick={rerollSeed}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ink-900 hover:bg-ink-700 text-white text-[12px] font-semibold transition"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Rastgele yeniden
+                </button>
+              </div>
+              <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                {AVATAR_STYLES.map((s) => {
+                  const selected = s.id === avatar.style;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => updateAvatar({ style: s.id, seed: avatar.seed })}
+                      className={`p-2 rounded-xl border-2 transition text-center ${
+                        selected ? "border-brand-500 bg-brand-50" : "border-ink-200 hover:border-ink-300 bg-white"
+                      }`}
+                      title={s.hint}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={dicebearUrl(s.id, avatar.seed)}
+                        alt={s.label}
+                        className="w-full aspect-square rounded-lg bg-paper"
+                      />
+                      <div className="text-[10px] text-ink-700 font-semibold mt-1 truncate">{s.label}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* STATS - main column */}
+        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <GitBranch className="w-4 h-4 text-brand-600" strokeWidth={2.5} />
+              <div className="text-[11px] uppercase tracking-widest text-ink-500 font-semibold">Düğüm</div>
+            </div>
+            <div className="font-display font-bold text-[32px] text-ink-900 tabular-nums leading-none">{score.nodesOpened}</div>
+            <div className="text-[11.5px] text-ink-500 mt-1">açılan düğüm sayısı</div>
+          </div>
+
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <FileQuestion className="w-4 h-4 text-sky-500" strokeWidth={2.5} />
+              <div className="text-[11px] uppercase tracking-widest text-ink-500 font-semibold">LGS</div>
+            </div>
+            <div className="font-display font-bold text-[32px] text-ink-900 tabular-nums leading-none">{score.lgsAnswered}</div>
+            <div className="text-[11.5px] text-ink-500 mt-1">çözülen soru</div>
+          </div>
+
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <Check className="w-4 h-4 text-mint-500" strokeWidth={2.5} />
+              <div className="text-[11px] uppercase tracking-widest text-ink-500 font-semibold">Doğruluk</div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <div className="font-display font-bold text-[32px] text-ink-900 tabular-nums leading-none">%{accuracy}</div>
+              <div className="text-[11px] text-ink-500 tabular-nums">{score.lgsCorrect}/{Math.max(score.lgsAnswered, 1)}</div>
+            </div>
+            <div className="text-[11.5px] text-ink-500 mt-1">doğru cevap oranı</div>
+          </div>
+
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <Flame className="w-4 h-4 text-coral-600" strokeWidth={2.5} />
+              <div className="text-[11px] uppercase tracking-widest text-ink-500 font-semibold">Seri</div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <div className="font-display font-bold text-[32px] text-ink-900 tabular-nums leading-none">{streak}</div>
+              <div className="text-[11px] text-ink-500">gün</div>
+            </div>
+            <div className="flex gap-1 mt-2">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className={`flex-1 h-1.5 rounded-full ${i < streak ? "bg-coral-500" : "bg-ink-100"}`} />
+              ))}
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
-          <h3 className="font-display font-bold text-[14px] text-ink-900 tracking-tight mb-3">Mevcut Rehber</h3>
-          <div className="text-[13px] text-ink-700"><strong>{charInfo.name}</strong></div>
-          <div className="text-[12px] text-ink-500 mt-0.5">{charInfo.subject}</div>
-        </div>
+        {/* Right rail */}
+        <div className="space-y-4">
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
+            <h3 className="font-display font-bold text-[14px] text-ink-900 tracking-tight mb-3">Mevcut Rehber</h3>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-display font-bold">
+                {charInfo.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+              </div>
+              <div>
+                <div className="text-[13.5px] text-ink-900 font-semibold">{charInfo.name}</div>
+                <div className="text-[11.5px] text-ink-500">{charInfo.subject}</div>
+              </div>
+            </div>
+          </div>
 
-        <div className="bg-white border border-ink-200 rounded-2xl shadow-card p-5">
-          <h3 className="font-display font-bold text-[14px] text-ink-900 tracking-tight mb-3">İstatistikler</h3>
-          <div className="space-y-1.5 text-[12.5px]">
-            <div className="flex justify-between"><span className="text-ink-500">Açılan düğüm</span><span className="font-bold text-ink-900">{score.nodesOpened}</span></div>
-            <div className="flex justify-between"><span className="text-ink-500">LGS sorusu çözüldü</span><span className="font-bold text-ink-900">{score.lgsAnswered}</span></div>
-            <div className="flex justify-between"><span className="text-ink-500">Doğru cevap</span><span className="font-bold text-mint-500">{score.lgsCorrect}</span></div>
+          <div className="bg-ink-950 text-white rounded-2xl p-5 relative overflow-hidden">
+            <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-brand-500/30 blur-3xl" />
+            <div className="relative">
+              <div className="text-[10px] uppercase tracking-widest text-white/60 font-semibold mb-1">Bir sonraki rütbe</div>
+              <h3 className="font-display font-bold text-[15px] tracking-tight mb-1">
+                {totalXP < 500 ? "Bronz Pusula" : totalXP < 1500 ? "Gümüş Pusula" : totalXP < 3000 ? "Altın Pusula" : "Elmas Pusula"}
+              </h3>
+              <p className="text-[11px] text-white/55 mb-3">
+                {totalXP < 500
+                  ? `${500 - totalXP} XP kaldı`
+                  : totalXP < 1500
+                  ? `${1500 - totalXP} XP kaldı`
+                  : totalXP < 3000
+                  ? `${3000 - totalXP} XP kaldı`
+                  : "Maks. rütbedesin 🏆"}
+              </p>
+              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-sun-500"
+                  style={{
+                    width: `${Math.min(100, (totalXP / (totalXP < 500 ? 500 : totalXP < 1500 ? 1500 : 3000)) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -849,6 +1350,7 @@ export default function ChatPage() {
           {page === "tasks"   && <TasksView />}
           {page === "topics"  && <TopicsView onContinue={handleTopicContinue} />}
           {page === "league"  && <LeagueView onStartQuickLgs={handleStartQuickLgs} />}
+          {page === "goals"   && <GoalsView />}
           {page === "friends" && <FriendsView />}
           {page === "profile" && <ProfileView user={user} charInfo={charInfo} />}
         </div>
