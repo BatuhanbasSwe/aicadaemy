@@ -243,11 +243,17 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
         createdAt: Date.now(),
       });
 
-      // Tree: 1 opened node + 3 suggested
-      const lastRootId = useGameStore.getState().tree.nodes[0]?.id ?? null;
-      const openedId = addNode({ parentId: lastRootId, type: "opened", content: trimmed.slice(0, 30) });
+      // Tree: Find last opened node to attach follow-ups
+      const nodes = useGameStore.getState().tree.nodes;
+      const lastOpened = [...nodes].reverse().find(n => n.type === 'opened' || n.type === 'root');
+      let parentForSuggest = lastOpened?.id ?? null;
+
+      if (!lastOpened || lastOpened.content !== trimmed) {
+         parentForSuggest = addNode({ parentId: parentForSuggest, type: "opened", content: trimmed });
+      }
+
       data.followUpQuestions.forEach((q) => {
-        addNode({ parentId: openedId, type: "suggested", content: q.slice(0, 30) });
+        addNode({ parentId: parentForSuggest, type: "suggested", content: q });
       });
 
       // LGS inject — gerçek soruyu /api/chat?lgsId=... ile çek
@@ -306,9 +312,13 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
         followUpQuestions: fb.followUps,
         createdAt: Date.now(),
       });
-      const lastRootId = useGameStore.getState().tree.nodes[0]?.id ?? null;
-      const openedId = addNode({ parentId: lastRootId, type: "opened", content: trimmed.slice(0, 30) });
-      fb.followUps.forEach((q) => addNode({ parentId: openedId, type: "suggested", content: q.slice(0, 30) }));
+      const nodes = useGameStore.getState().tree.nodes;
+      const lastOpened = [...nodes].reverse().find(n => n.type === 'opened' || n.type === 'root');
+      let parentForSuggest = lastOpened?.id ?? null;
+      if (!lastOpened || lastOpened.content !== trimmed) {
+         parentForSuggest = addNode({ parentId: parentForSuggest, type: "opened", content: trimmed });
+      }
+      fb.followUps.forEach((q) => addNode({ parentId: parentForSuggest, type: "suggested", content: q }));
 
       // Occasionally show a stub LGS question
       if (messages.length > 0 && messages.length % 3 === 0) {

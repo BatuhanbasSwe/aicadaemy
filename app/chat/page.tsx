@@ -15,7 +15,7 @@ import {
   Search, Bell, Mail, Flame, Target, Calendar,
   Plus, Check, Clock, Timer, Zap, ArrowRight,
   Crown, Lightbulb, FileQuestion, GitBranch,
-  Sparkles, Copy, RefreshCw, LogOut, Maximize2, X,
+  Sparkles, Copy, RefreshCw, LogOut, Maximize2, X, Network,
 } from "lucide-react";
 import { signOut as supabaseSignOut } from "@/lib/supabase/auth";
 
@@ -27,94 +27,6 @@ const TREE_DOT: Record<string, string> = {
   starred:     "#EC4899",
   lgs_correct: "#3FAE82",
 };
-
-/* ── Sidebar curiosity tree (simple list, no D3) */
-function SidebarTree({
-  nodes,
-  charId,
-  onNodeClick,
-  onOpenFullscreen,
-}: {
-  nodes: TreeNode[];
-  charId: CharacterId | null;
-  onNodeClick: (msg: string) => void;
-  onOpenFullscreen: () => void;
-}) {
-  const [open, setOpen] = useState(true);
-  const subject = charId ? CHAR_META_MINI[charId] : null;
-
-  // Build parent→children map; skip suggested in sidebar (too noisy)
-  const visible = nodes.filter((n) => n.type !== "suggested");
-  const childrenOf = new Map<string | null, TreeNode[]>();
-  visible.forEach((n) => {
-    const key = n.parentId ?? null;
-    if (!childrenOf.has(key)) childrenOf.set(key, []);
-    childrenOf.get(key)!.push(n);
-  });
-
-  const renderLevel = (parentId: string | null, depth: number): React.ReactNode =>
-    (childrenOf.get(parentId) ?? []).map((node) => (
-      <div key={node.id}>
-        <button
-          onClick={() => node.type !== "root" && onNodeClick(node.content)}
-          className={`w-full flex items-center gap-1.5 py-1 rounded-md text-left transition ${
-            node.type === "root"
-              ? "cursor-default text-white/35 text-[10.5px]"
-              : "text-white/60 hover:text-white hover:bg-white/5 text-[11.5px]"
-          }`}
-          style={{ paddingLeft: `${8 + depth * 10}px` }}
-        >
-          <span
-            className="w-1.5 h-1.5 rounded-full shrink-0"
-            style={{ background: TREE_DOT[node.type] ?? "#6B6B6B" }}
-          />
-          <span className="truncate">{node.content.length > 26 ? node.content.slice(0, 25) + "…" : node.content}</span>
-        </button>
-        {renderLevel(node.id, depth + 1)}
-      </div>
-    ));
-
-  return (
-    <div className="ml-3 mt-1 mb-2 pl-2 border-l border-white/10">
-      <div className="flex items-center justify-between pr-1 mb-1">
-        <button
-          onClick={() => setOpen((s) => !s)}
-          className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-white/30 font-semibold hover:text-white/55 transition"
-        >
-          <span>Merak Ağacı</span>
-          <span className="text-[8px]">{open ? "▲" : "▼"}</span>
-        </button>
-        <button
-          onClick={onOpenFullscreen}
-          title="Tam ekranda aç"
-          className="text-white/25 hover:text-white/60 transition p-0.5 rounded"
-        >
-          <Maximize2 className="w-3 h-3" />
-        </button>
-      </div>
-
-      {open && (
-        <div className="space-y-0">
-          {nodes.length === 0 ? (
-            <div className="px-2 py-1 text-[10.5px] text-white/20 italic">
-              Sohbet başlayınca ağaç büyür 🌱
-            </div>
-          ) : (
-            <div>
-              {subject && (
-                <div className="px-2 py-0.5 text-[10px] font-bold text-white/30 uppercase tracking-wider flex items-center gap-1.5">
-                  <span className="w-1 h-1 rounded-full" style={{ background: TREE_DOT.root }} />
-                  {subject}
-                </div>
-              )}
-              {renderLevel(null, 0)}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 const CHAR_META_MINI: Record<CharacterId, string> = {
   ataturk:     "T.C. İnkılap Tarihi",
@@ -135,12 +47,13 @@ const CHAR_META: Record<CharacterId, { name: string; subject: string }> = {
   shakespeare: { name: "William Shakespeare",        subject: "İngilizce" },
 };
 
-type PageId = "home" | "tasks" | "topics" | "league" | "friends" | "profile" | "goals";
+type PageId = "home" | "tasks" | "topics" | "tree" | "league" | "friends" | "profile" | "goals";
 
 const NAV: { id: PageId; label: string; Icon: React.ElementType; badge?: number }[] = [
   { id: "home",    label: "Anasayfa",   Icon: Home },
   { id: "tasks",   label: "Görevler",   Icon: ListChecks },
   { id: "topics",  label: "Konular",    Icon: BookOpen },
+  { id: "tree",    label: "Merak Ağacı",Icon: Network },
   { id: "league",  label: "Lig",        Icon: Trophy },
   { id: "friends", label: "Arkadaşlar", Icon: Users, badge: 2 },
   { id: "profile", label: "Profil",     Icon: User },
@@ -150,6 +63,7 @@ const PAGE_META: Record<PageId, { title: string; subtitle: string }> = {
   home:    { title: "Anasayfa",   subtitle: "Bugün ne keşfedeceğiz?" },
   tasks:   { title: "Görevler",   subtitle: "Günlük planını yap, XP'yi topla" },
   topics:  { title: "Konular",    subtitle: "LGS 8. sınıf müfredatı · 6 ders" },
+  tree:    { title: "Merak Ağacı",subtitle: "Keşfettiğin kavramlar ve bağlantılar" },
   league:  { title: "Lig",        subtitle: "Altın Lig · Haftalık sıralama" },
   friends: { title: "Arkadaşlar", subtitle: "Birlikte çalış, birlikte yüksel" },
   profile: { title: "Profil",     subtitle: "Hesabın ve istatistiklerin" },
@@ -211,14 +125,6 @@ function Sidebar({
                     </span>
                   )}
                 </button>
-                {id === "topics" && (
-                  <SidebarTree
-                    nodes={treeNodes}
-                    charId={treeCharId}
-                    onNodeClick={onTreeNodeClick}
-                    onOpenFullscreen={onOpenTreeFullscreen}
-                  />
-                )}
               </Fragment>
             );
           })}
@@ -1419,6 +1325,38 @@ function ProfileView({ user, charInfo }: {
 }
 
 /* ══════════════════════════════════════════════════════════
+   TREE VIEW — Full screen curiosity tree
+   ══════════════════════════════════════════════════════════ */
+function TreeView({
+  externalMessage,
+  onExternalSent,
+  onNodeClick,
+}: {
+  externalMessage: string | null;
+  onExternalSent: () => void;
+  onNodeClick: (msg: string) => void;
+}) {
+  return (
+    <div className="h-full flex flex-col px-6 py-3 gap-3 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-3 min-h-0 max-w-7xl w-full mx-auto">
+        {/* Sol panel - Merak Ağacı (2/3) */}
+        <div className="lg:col-span-2 min-h-0 flex flex-col">
+          <CuriosityTree onNodeClick={(node) => onNodeClick(node.content)} />
+        </div>
+        
+        {/* Sağ panel - Sohbet (1/3) */}
+        <div className="lg:col-span-1 min-h-0 flex flex-col">
+          <ChatCard
+            externalMessage={externalMessage}
+            onExternalSent={onExternalSent}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
    DASHBOARD SHELL
    ══════════════════════════════════════════════════════════ */
 export default function ChatPage() {
@@ -1488,6 +1426,7 @@ export default function ChatPage() {
           treeNodes={treeNodes}
           treeCharId={selectedCharacter}
           onTreeNodeClick={(msg) => { setExternalMessage(msg); setPage("home"); }}
+          onOpenTreeFullscreen={() => setPage("tree")}
         />
       </div>
 
@@ -1511,6 +1450,13 @@ export default function ChatPage() {
           )}
           {page === "tasks"   && <TasksView />}
           {page === "topics"  && <TopicsView onContinue={handleTopicContinue} />}
+          {page === "tree"    && (
+            <TreeView
+              externalMessage={externalMessage}
+              onExternalSent={() => setExternalMessage(null)}
+              onNodeClick={(msg) => setExternalMessage(msg)}
+            />
+          )}
           {page === "league"  && <LeagueView onStartQuickLgs={handleStartQuickLgs} />}
           {page === "goals"   && <GoalsView />}
           {page === "friends" && <FriendsView />}

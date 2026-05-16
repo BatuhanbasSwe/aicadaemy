@@ -193,9 +193,13 @@ export default function CuriosityTree({ onNodeClick }: Props) {
       })
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .on("click", (_event: unknown, d: any) => {
+        // Send message to chatbot for any non-root node
+        if (d.data.type !== "root") {
+          onNodeClick?.(d.data as TreeNode);
+        }
+
         if (d.data.type === "suggested") {
           promoteSuggested(d.data.id);
-          onNodeClick?.(d.data as TreeNode);
           return;
         }
         const id = d.data.id;
@@ -258,33 +262,37 @@ export default function CuriosityTree({ onNodeClick }: Props) {
     labelG.each(function (d) {
       const sel = d3.select(this);
       const r = d.data.type === "root" ? 12 : 9;
-      const yOffset = r + 14;
+      const yOffset = r + 8;
       const fontSize = d.data.type === "root" ? 12 : 11;
-      const text = shorten(d.data.content, isFullscreen ? 38 : 22);
+      const text = d.data.content;
+      
+      const width = isFullscreen ? 140 : 110;
+      const height = 60;
+      const xOffset = -(width / 2);
 
-      const textEl = sel
-        .append("text")
+      sel
+        .append("foreignObject")
+        .attr("x", xOffset)
         .attr("y", yOffset)
-        .attr("text-anchor", "middle")
-        .attr("font-size", String(fontSize))
-        .attr("font-family", "system-ui, -apple-system, sans-serif")
-        .attr("font-weight", d.data.type === "root" ? "700" : "600")
-        .attr("fill", "#16181F")
-        .text(text);
-
-      const bbox = (textEl.node() as SVGTextElement | null)?.getBBox();
-      if (bbox) {
-        sel
-          .insert("rect", "text")
-          .attr("x", bbox.x - 5)
-          .attr("y", bbox.y - 2)
-          .attr("width", bbox.width + 10)
-          .attr("height", bbox.height + 4)
-          .attr("rx", 5)
-          .attr("fill", "rgba(255,255,255,0.92)")
-          .attr("stroke", "rgba(15,17,21,0.08)")
-          .attr("stroke-width", 1);
-      }
+        .attr("width", width)
+        .attr("height", height)
+        .append("xhtml:div")
+        .style("font-size", `${fontSize}px`)
+        .style("font-family", "system-ui, -apple-system, sans-serif")
+        .style("font-weight", d.data.type === "root" ? "700" : "600")
+        .style("color", "#16181F")
+        .style("text-align", "center")
+        .style("line-height", "1.3")
+        .style("word-wrap", "break-word")
+        .style("display", "-webkit-box")
+        .style("-webkit-line-clamp", "3")
+        .style("-webkit-box-orient", "vertical")
+        .style("overflow", "hidden")
+        .style("background", "rgba(255,255,255,0.92)")
+        .style("border", "1px solid rgba(15,17,21,0.08)")
+        .style("border-radius", "6px")
+        .style("padding", "2px 4px")
+        .html(text);
     });
   }, [nodes, expanded, promoteSuggested, resizeTick, onNodeClick, isFullscreen]);
 
