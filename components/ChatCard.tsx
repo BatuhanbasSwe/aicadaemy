@@ -251,10 +251,24 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
         addNode({ parentId: openedId, type: "suggested", content: q.slice(0, 30) });
       });
 
-      // LGS inject
-      if (data.shouldInjectLgsQuestion) {
-        const stub = STUB_LGS_QUESTIONS[Math.floor(Math.random() * STUB_LGS_QUESTIONS.length)];
-        setPendingLgs(stub);
+      // LGS inject — gerçek soruyu /api/chat?lgsId=... ile çek
+      if (data.shouldInjectLgsQuestion && data.suggestedLgsQuestionId) {
+        try {
+          const lgsRes = await fetch(
+            `/api/chat?lgsId=${encodeURIComponent(data.suggestedLgsQuestionId)}`,
+          );
+          if (lgsRes.ok) {
+            const lgsQ: LgsQuestion = await lgsRes.json();
+            setPendingLgs(lgsQ);
+          } else {
+            setPendingLgs(STUB_LGS_QUESTIONS[Math.floor(Math.random() * STUB_LGS_QUESTIONS.length)]);
+          }
+        } catch {
+          setPendingLgs(STUB_LGS_QUESTIONS[Math.floor(Math.random() * STUB_LGS_QUESTIONS.length)]);
+        }
+      } else if (data.shouldInjectLgsQuestion) {
+        // shouldInject true ama id yoksa stub'a düş
+        setPendingLgs(STUB_LGS_QUESTIONS[Math.floor(Math.random() * STUB_LGS_QUESTIONS.length)]);
       }
     } catch {
       // Stub fallback when /api/chat not yet implemented

@@ -46,8 +46,11 @@
   --font-mono:    var(--font-jetbrains), monospace;
 }
 
-html, body { background: #F7F5F0; }
-body { color: #16181F; }
+:root { color-scheme: light only; }
+html, body {
+  background: #F7F5F0 !important;
+  color: #16181F !important;
+}
 
 /* ── Scrollbars ──────────────────────────────────────────── */
 .nice-scroll::-webkit-scrollbar          { width: 8px; height: 8px; }

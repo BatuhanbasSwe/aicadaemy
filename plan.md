@@ -308,6 +308,123 @@
 
 ---
 
+## 🚀 v2 Roadmap — Hackathon Sonrası Vizyon
+
+> **Önemli:** Aşağıdaki 4 büyük modül **hackathon süresine sığmaz** (her biri 1-4 hafta'lık iş). Demo'da bunları **vizyon olarak** sun, pitch deck slayt 5'te yer alıyor. Jüri "ciddi bir ürün vizyonu" görmek ister, bunlar tam o işe yarar.
+
+### 🟫 Görev 21 — Veli Hesabı & Dashboard
+
+> **Amaç:** Çocuğun ne çalıştığını, nerede zorlandığını, ne kadar zaman harcadığını velinin görmesi. Mahremiyet × şeffaflık dengesi.
+
+- [ ] Veli rolü için ayrı kayıt akışı (e-posta + çocuk daveti)
+- [ ] Çocuk hesabını veliye bağlama (davet kodu mekaniği)
+- [ ] Veli dashboard'u:
+  - [ ] Bugün/bu hafta/bu ay çalışma süresi grafiği
+  - [ ] Ders bazında performans (LGS doğruluk % heatmap)
+  - [ ] Çocuğun en çok zorlandığı 5 konu
+  - [ ] Merak Ağacı özet görseli (çocuğun keşif haritası)
+- [ ] **İçerik filtresi:**
+  - [ ] Karakter sohbetlerinde uygunsuz içerik tespiti (Gemini safety + custom filter)
+  - [ ] Veli onayı bekleyen mesaj kuyruğu (opsiyonel ebeveyn modu)
+  - [ ] Yaşa uygun olmayan soru engelleme
+- [ ] **Bildirimler:**
+  - [ ] Günlük özet e-postası (çocuk X dk çalıştı, Y soru çözdü)
+  - [ ] Anlık başarı bildirimleri ("Çocuğunuz bugün matematikte 10 LGS sorusu doğru çözdü")
+  - [ ] Çalışma boşluğu uyarısı (3 gündür hiç çalışmadı)
+- [ ] KVKK + mahremiyet politikası (çocuğa açıklanması)
+
+**Tahmini efor:** 2-3 hafta
+
+### 🟪 Görev 22 — Kurum / Dershane Admin Paneli
+
+> **Amaç:** Dershane/okul müdürünün veya öğretmenin sınıfını yönetmesi. B2B kanal — para gelir.
+
+- [ ] Kurum hesabı (admin/öğretmen rolleri)
+- [ ] **Öğrenci davet sistemi:**
+  - [ ] Toplu CSV ile öğrenci ekleme
+  - [ ] Tek tıkla davet kodu üretip e-posta/SMS gönder
+  - [ ] Öğrencinin kuruma bağlı olduğu işareti (rozetli profil)
+- [ ] **Öğretmen görev atama:**
+  - [ ] Belirli karaktere belirli macera atama ("Ahmet, Atatürk ile Sakarya'yı çalış")
+  - [ ] LGS soru paketi atama (konu bazlı)
+  - [ ] Deadline ve hatırlatma
+  - [ ] Öğretmen panelinde tamamlanma yüzdesi
+- [ ] **Kurum bazlı liderlik tablosu:**
+  - [ ] Sınıf içi liderlik (sadece o sınıftakiler)
+  - [ ] Dershaneler arası liderlik (opt-in, anonim)
+  - [ ] Haftalık/aylık öne çıkanlar
+- [ ] **Raporlama:**
+  - [ ] Sınıf performans raporu PDF
+  - [ ] Veli toplantısı için 1 sayfa öğrenci özeti
+- [ ] Faturalama altyapısı (kullanıcı başına lisans)
+
+**Tahmini efor:** 3-4 hafta
+
+### 🟦 Görev 23 — Veli Onaylı Forum + AI Moderatör
+
+> **Amaç:** Çocuklar birbirine soru sorabilsin, ama her şey güvenli olsun. Konu bazlı kanallar = daha derin tartışma.
+
+- [ ] **Konu bazlı kanallar:**
+  - [ ] Her LGS dersi için ayrı kanal (Matematik, İnkılap, Fen, vs.)
+  - [ ] Alt kanallar (örn: "Matematik > Geometri > Üçgenler")
+  - [ ] Kanal başına moderatör karakter (Atatürk → İnkılap kanalı)
+- [ ] **AI moderatör (Gemini):**
+  - [ ] Her mesajı otomatik tarama: uygunsuz dil, kişisel bilgi, kopya çekme talebi → otomatik flag
+  - [ ] Soruları kategorize etme (anlamlı / boş / spam)
+  - [ ] Bot olarak ilk yanıt verebilir (karakter persona ile)
+  - [ ] Toksik kullanıcıya otomatik uyarı + 24 saat susturma
+- [ ] **Veli onayı katmanı:**
+  - [ ] İlk kayıtta veli forum erişimini onaylar (KVKK gereği zaten gerekiyor)
+  - [ ] "Sadece sınıf arkadaşlarımla konuş" modu (Görev 22 ile entegre)
+  - [ ] Veli paneline forum aktivite özeti
+- [ ] **Sosyal mekanikler:**
+  - [ ] Soruya 👍 verme, en iyi cevap işaretleme
+  - [ ] Soru sahibine "bunu cevapladığın için teşekkürler" rozeti
+  - [ ] Haftalık "en yardımsever" öğrenci öne çıkarma
+- [ ] Spam ve toksisite metrikleri (admin dashboard)
+
+**Tahmini efor:** 3-4 hafta
+
+### 🟩 Görev 24 — OGM Ders Kitabı Entegrasyonu + Kitap × Soru Eşleştirme
+
+> **Amaç:** Çocuk hangi sayfayı çalıştıysa o sayfaya birebir uygun LGS sorusu önerilsin. Bu = sınırsız kişiselleştirme.
+
+- [ ] OGM (Ortaöğretim Genel Müdürlüğü) ders kitaplarını dijitalleştirme:
+  - [ ] PDF → metin (OCR + manuel düzeltme)
+  - [ ] Üniteleri, alt başlıkları, sayfa numaralarını metadata olarak işle
+  - [ ] Her sınıf × ders için ayrı yapı (8.sınıf İnkılap, 7.sınıf Matematik...)
+- [ ] **Kitap × LGS sorusu otomatik eşleme:**
+  - [ ] Embedding-based similarity (Gemini text-embedding-004)
+  - [ ] Her LGS sorusu için kitabın en alakalı 3 sayfası
+  - [ ] Tersi de: her sayfa için "bu sayfadan çıkmış 5 LGS sorusu"
+- [ ] **RAG (Retrieval-Augmented Generation):**
+  - [ ] Karakter cevap üretirken o sayfanın içeriğini context'e gönder
+  - [ ] "Halifeliğin kaldırılması" sorusunda → kitabın o paragrafından alıntı
+  - [ ] Cevapta kaynak sayfası link olarak göster ("Kitabın 47. sayfasından")
+- [ ] **Kişiselleştirilmiş çalışma planı:**
+  - [ ] Çocuğun yanlış cevapları → hangi sayfaya geri dönmeli
+  - [ ] Veli/öğretmen panelinde "Ahmet bu hafta kitabın şu konularını ihmal etti"
+- [ ] **Lisanslama:**
+  - [ ] OGM ile resmi içerik anlaşması (eğitim mevzuatı)
+  - [ ] Açık erişim PDF'leri için lisans uyumu
+
+**Tahmini efor:** 4-6 hafta + OGM iş birliği görüşmesi
+
+---
+
+### 📊 v2 Toplam Efor & Sıralama Önerisi
+
+| Görev | Süre | Öncelik | İş Modeli |
+|-------|------|---------|-----------|
+| 21 — Veli paneli | 2-3 hafta | 🔴 Yüksek | Kullanıcı güveni → tutma |
+| 22 — Kurum paneli | 3-4 hafta | 🔴 Yüksek | B2B = ilk gelir kanalı |
+| 24 — Kitap eşleme | 4-6 hafta | 🟡 Orta | Wow faktör, diferansiyasyon |
+| 23 — Forum | 3-4 hafta | 🟢 Düşük | Topluluk geç gelir |
+
+**Önerilen sıra:** 21 → 22 → 24 → 23 (veli güveni → para → diferansiyasyon → topluluk).
+
+---
+
 ## 🎤 Demo Senaryosu (3 Dakika 30 Saniye)
 
 **0:00–0:20 — Hook**

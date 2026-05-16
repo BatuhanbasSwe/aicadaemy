@@ -7,6 +7,7 @@ import ChatCard from "@/components/ChatCard";
 import CuriosityTree from "@/components/CuriosityTree";
 import TasksCard from "@/components/TasksCard";
 import FriendList from "@/components/FriendList";
+import NotificationsDrawer from "@/components/NotificationsDrawer";
 import {
   Compass, Home, ListChecks, BookOpen, Trophy, Users, User,
   Search, Bell, Mail, Flame, Target, Calendar,
@@ -48,8 +49,13 @@ const PAGE_META: Record<PageId, { title: string; subtitle: string }> = {
    SIDEBAR
    ══════════════════════════════════════════════════════════ */
 function Sidebar({
-  active, onChange, taskCount,
-}: { active: PageId; onChange: (p: PageId) => void; taskCount: number }) {
+  active, onChange, taskCount, onOpenNotifications,
+}: {
+  active: PageId;
+  onChange: (p: PageId) => void;
+  taskCount: number;
+  onOpenNotifications: () => void;
+}) {
   return (
     <aside className="w-[244px] shrink-0 bg-ink-950 text-white/85 flex flex-col h-full">
       <div className="px-5 pt-5 pb-4 flex items-center gap-2.5 shrink-0">
@@ -96,11 +102,15 @@ function Sidebar({
         <div className="px-2 mt-6 mb-1.5 text-[10.5px] uppercase tracking-[0.18em] text-white/35 font-semibold">Genel</div>
         <div className="space-y-0.5">
           {[
-            { label: "Hedeflerim", Icon: Target },
-            { label: "Takvim",     Icon: Calendar },
-            { label: "Bildirimler",Icon: Bell },
-          ].map(({ label, Icon }) => (
-            <button key={label} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] text-white/55 hover:text-white hover:bg-white/5 font-medium">
+            { label: "Hedeflerim", Icon: Target,   onClick: () => onChange("profile") },
+            { label: "Takvim",     Icon: Calendar, onClick: () => onChange("tasks") },
+            { label: "Bildirimler",Icon: Bell,     onClick: onOpenNotifications },
+          ].map(({ label, Icon, onClick }) => (
+            <button
+              key={label}
+              onClick={onClick}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] text-white/55 hover:text-white hover:bg-white/5 font-medium transition"
+            >
               <Icon className="w-[17px] h-[17px]" strokeWidth={2} />
               <span>{label}</span>
             </button>
@@ -130,8 +140,14 @@ function Sidebar({
    TOPBAR
    ══════════════════════════════════════════════════════════ */
 function Topbar({
-  title, subtitle, username,
-}: { title: string; subtitle: string; username: string }) {
+  title, subtitle, username, onOpenNotifications, onOpenProfile,
+}: {
+  title: string;
+  subtitle: string;
+  username: string;
+  onOpenNotifications: () => void;
+  onOpenProfile: () => void;
+}) {
   const initial = username?.[0]?.toUpperCase() ?? "S";
   return (
     <header className="h-14 px-6 flex items-center justify-between border-b border-ink-200 bg-paper/80 backdrop-blur-sm shrink-0">
@@ -144,14 +160,25 @@ function Topbar({
           <Search className="w-4 h-4" />
           <input className="flex-1 bg-transparent focus:outline-none text-[12px] text-ink-900 placeholder-ink-400" placeholder="Konu, soru ara…" />
         </div>
-        <button className="w-9 h-9 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition flex items-center justify-center text-ink-700">
+        <button
+          onClick={onOpenNotifications}
+          title="Mesajlar (yakında)"
+          className="w-9 h-9 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition flex items-center justify-center text-ink-700"
+        >
           <Mail className="w-4 h-4" />
         </button>
-        <button className="relative w-9 h-9 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition flex items-center justify-center text-ink-700">
+        <button
+          onClick={onOpenNotifications}
+          title="Bildirimler"
+          className="relative w-9 h-9 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition flex items-center justify-center text-ink-700"
+        >
           <Bell className="w-4 h-4" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-coral-500" />
         </button>
-        <button className="ml-1 flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition">
+        <button
+          onClick={onOpenProfile}
+          className="ml-1 flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition"
+        >
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold text-xs">{initial}</div>
           <div className="text-left leading-tight hidden sm:block">
             <div className="text-[11.5px] font-semibold text-ink-900">{username}</div>
@@ -201,12 +228,20 @@ function CompactStatCard({
 /* ══════════════════════════════════════════════════════════
    HOME VIEW — fits in viewport, no scroll
    ══════════════════════════════════════════════════════════ */
-function HomeView({ onGoToTasks }: { onGoToTasks: () => void }) {
+function HomeView({
+  onGoToTasks,
+  externalMessage,
+  onExternalSent,
+  onTreeNodeClick,
+}: {
+  onGoToTasks: () => void;
+  externalMessage: string | null;
+  onExternalSent: () => void;
+  onTreeNodeClick: (msg: string) => void;
+}) {
   const score = useGameStore((s) => s.score);
   const accuracy = score.lgsAnswered > 0
     ? Math.round((score.lgsCorrect / score.lgsAnswered) * 100) : 0;
-
-  const [treeMsg, setTreeMsg] = useState<string | null>(null);
 
   return (
     <div className="h-full flex flex-col px-6 py-3 gap-3 overflow-hidden">
@@ -228,15 +263,15 @@ function HomeView({ onGoToTasks }: { onGoToTasks: () => void }) {
         {/* Chat — 60% */}
         <div className="lg:col-span-3 min-h-0 flex flex-col">
           <ChatCard
-            externalMessage={treeMsg}
-            onExternalSent={() => setTreeMsg(null)}
+            externalMessage={externalMessage}
+            onExternalSent={onExternalSent}
           />
         </div>
         {/* Right panel — 40% : Tasks + Tree (fit in viewport) */}
         <div className="lg:col-span-2 flex flex-col gap-3 min-h-0">
           <TasksCard onSeeAll={onGoToTasks} />
           <div className="flex-1 min-h-0">
-            <CuriosityTree onNodeClick={(node) => setTreeMsg(node.content)} />
+            <CuriosityTree onNodeClick={(node) => onTreeNodeClick(node.content)} />
           </div>
         </div>
       </div>
@@ -460,16 +495,27 @@ function TasksView() {
 /* ══════════════════════════════════════════════════════════
    TOPICS VIEW — 6 subject cards
    ══════════════════════════════════════════════════════════ */
-const TOPICS = [
-  { name: "T.C. İnkılap Tarihi", guide: "Mustafa Kemal Atatürk", progress: 62, units: 14, done: 9, next: "Trablusgarp Savaşı", ringStroke: "#6B57DC", bg: "bg-brand-50", emoji: "🇹🇷" },
-  { name: "Türkçe", guide: "Yunus Emre", progress: 48, units: 18, done: 8, next: "Paragraf · Ana Düşünce", ringStroke: "#3FAE82", bg: "bg-mint-100", emoji: "📜" },
-  { name: "Matematik", guide: "Cahit Arf", progress: 35, units: 20, done: 7, next: "Üslü İfadeler", ringStroke: "#5E8BC3", bg: "bg-sky-100", emoji: "🧮" },
-  { name: "Fen Bilimleri", guide: "Aziz Sancar", progress: 71, units: 16, done: 11, next: "DNA ve Genetik", ringStroke: "#E8B83A", bg: "bg-sun-100", emoji: "🔬" },
-  { name: "İngilizce", guide: "William Shakespeare", progress: 55, units: 12, done: 6, next: "Modal verbs", ringStroke: "#E58A5A", bg: "bg-coral-100", emoji: "🎭" },
-  { name: "Din Kültürü", guide: "Mevlana", progress: 80, units: 10, done: 8, next: "Zekât ve sadaka", ringStroke: "#6B57DC", bg: "bg-brand-50", emoji: "🕊️" },
+const TOPICS: {
+  name: string;
+  guide: string;
+  characterId: CharacterId;
+  progress: number;
+  units: number;
+  done: number;
+  next: string;
+  ringStroke: string;
+  bg: string;
+  emoji: string;
+}[] = [
+  { name: "T.C. İnkılap Tarihi", guide: "Mustafa Kemal Atatürk", characterId: "ataturk", progress: 62, units: 14, done: 9, next: "Trablusgarp Savaşı", ringStroke: "#6B57DC", bg: "bg-brand-50", emoji: "🇹🇷" },
+  { name: "Türkçe", guide: "Yunus Emre", characterId: "yunus_emre", progress: 48, units: 18, done: 8, next: "Paragraf · Ana Düşünce", ringStroke: "#3FAE82", bg: "bg-mint-100", emoji: "📜" },
+  { name: "Matematik", guide: "Cahit Arf", characterId: "cahit_arf", progress: 35, units: 20, done: 7, next: "Üslü İfadeler", ringStroke: "#5E8BC3", bg: "bg-sky-100", emoji: "🧮" },
+  { name: "Fen Bilimleri", guide: "Aziz Sancar", characterId: "aziz_sancar", progress: 71, units: 16, done: 11, next: "DNA ve Genetik", ringStroke: "#E8B83A", bg: "bg-sun-100", emoji: "🔬" },
+  { name: "İngilizce", guide: "William Shakespeare", characterId: "shakespeare", progress: 55, units: 12, done: 6, next: "Modal verbs", ringStroke: "#E58A5A", bg: "bg-coral-100", emoji: "🎭" },
+  { name: "Din Kültürü", guide: "Mevlana", characterId: "mevlana", progress: 80, units: 10, done: 8, next: "Zekât ve sadaka", ringStroke: "#6B57DC", bg: "bg-brand-50", emoji: "🕊️" },
 ];
 
-function TopicsView() {
+function TopicsView({ onContinue }: { onContinue: (characterId: CharacterId, topicName: string, nextUnit: string) => void }) {
   return (
     <div className="h-full overflow-y-auto nice-scroll px-6 py-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl">
@@ -502,7 +548,10 @@ function TopicsView() {
                 <div className="text-[11px] text-ink-500">
                   <span className="font-semibold text-ink-900 tabular-nums">{t.done}</span> / {t.units} ünite
                 </div>
-                <button className="text-[12px] font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1">
+                <button
+                  onClick={() => onContinue(t.characterId, t.name, t.next)}
+                  className="text-[12px] font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1 cursor-pointer transition"
+                >
                   Devam et <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -525,10 +574,30 @@ const LEAGUE_USERS = [
   { rank: 6, name: "Ayşe Demir",    avatar: "A", color: "#E8B83A", xp: 3540, delta: 50,  streak: 18, online: false, me: false },
 ];
 
-function LeagueView() {
+function LeagueView({ onStartQuickLgs }: { onStartQuickLgs: () => void }) {
   const user = useGameStore((s) => s.user);
   const score = useGameStore((s) => s.score);
   const meXp = score.nodesOpened * 50 + score.lgsCorrect * 100;
+
+  const [copied, setCopied] = useState(false);
+  const copyCode = async () => {
+    if (!user?.inviteCode) return;
+    try {
+      await navigator.clipboard.writeText(user.inviteCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard API blocked; fallback: select-and-copy via textarea
+      const ta = document.createElement("textarea");
+      ta.value = user.inviteCode;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
 
   const rows = [
     ...LEAGUE_USERS,
@@ -611,7 +680,10 @@ function LeagueView() {
             <div className="h-2 rounded-full bg-ink-100 overflow-hidden mb-3">
               <div className="h-full rounded-full bg-gradient-to-r from-brand-500 to-coral-500" style={{ width: "76%" }} />
             </div>
-            <button className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-[12px] font-semibold flex items-center justify-center gap-1.5">
+            <button
+              onClick={onStartQuickLgs}
+              className="w-full py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-[12px] font-semibold flex items-center justify-center gap-1.5 transition"
+            >
               <Zap className="w-3.5 h-3.5" strokeWidth={2.5} /> Hızlı soru çözmeye başla
             </button>
           </div>
@@ -624,7 +696,14 @@ function LeagueView() {
               <p className="text-[11px] text-white/55 mb-3">Kayıt olan her arkadaş için ikiniz de bonus alırsınız.</p>
               <div className="flex items-center gap-2 bg-white/10 rounded-lg p-1.5">
                 <code className="flex-1 px-2 font-mono text-[12px] text-white truncate">{user?.inviteCode ?? "KAS-XXXXXX"}</code>
-                <button className="px-3 py-1.5 rounded-md bg-sun-500 text-ink-900 text-[11px] font-bold">Kopyala</button>
+                <button
+                  onClick={copyCode}
+                  className={`px-3 py-1.5 rounded-md text-[11px] font-bold transition ${
+                    copied ? "bg-mint-500 text-white" : "bg-sun-500 text-ink-900 hover:bg-sun-500/90"
+                  }`}
+                >
+                  {copied ? "Kopyalandı ✓" : "Kopyala"}
+                </button>
               </div>
             </div>
           </div>
@@ -697,8 +776,12 @@ export default function ChatPage() {
   const router = useRouter();
   const user   = useGameStore((s) => s.user);
   const selectedCharacter = useGameStore((s) => s.selectedCharacter);
+  const setCharacter      = useGameStore((s) => s.setCharacter);
+  const resetConversation = useGameStore((s) => s.resetConversation);
 
   const [page, setPage] = useState<PageId>("home");
+  const [externalMessage, setExternalMessage] = useState<string | null>(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
     if (user === null) {
@@ -713,21 +796,59 @@ export default function ChatPage() {
   const meta = PAGE_META[page];
   const todayLeft = 3;
 
+  /** Konular > "Devam et" tıklanınca: karakteri seç, gerekirse konuşmayı sıfırla, home'a git ve mesaj yolla */
+  const handleTopicContinue = (
+    nextCharacterId: CharacterId,
+    topicName: string,
+    nextUnit: string,
+  ) => {
+    if (selectedCharacter !== nextCharacterId) {
+      resetConversation();
+      setCharacter(nextCharacterId);
+    }
+    setExternalMessage(`Merhaba, "${nextUnit}" konusuna geçmek istiyorum. Beni biraz hazırlar mısın?`);
+    setPage("home");
+  };
+
+  /** Lig > "Hızlı soru çözmeye başla" → ChatCard'a "bana bir LGS sorusu sor" mesajı */
+  const handleStartQuickLgs = () => {
+    setExternalMessage("Hızlı bir LGS sorusu çözmek istiyorum, bana bir tane sorar mısın?");
+    setPage("home");
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-paper">
       <div className="hidden md:flex h-full">
-        <Sidebar active={page} onChange={setPage} taskCount={todayLeft} />
+        <Sidebar
+          active={page}
+          onChange={setPage}
+          taskCount={todayLeft}
+          onOpenNotifications={() => setNotificationsOpen(true)}
+        />
       </div>
 
       <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-        <Topbar title={meta.title} subtitle={meta.subtitle} username={user.username} />
+        <Topbar
+          title={meta.title}
+          subtitle={meta.subtitle}
+          username={user.username}
+          onOpenNotifications={() => setNotificationsOpen(true)}
+          onOpenProfile={() => setPage("profile")}
+        />
 
         {/* Each view manages its own scroll (or none for home) */}
         <div className="flex-1 min-h-0 overflow-hidden pb-14 md:pb-0">
-          {page === "home"    && <HomeView onGoToTasks={() => setPage("tasks")} />}
+          {page === "home"    && (
+            <HomeView
+              onGoToTasks={() => setPage("tasks")}
+              externalMessage={externalMessage}
+              onExternalSent={() => setExternalMessage(null)}
+              onTreeNodeClick={(msg) => setExternalMessage(msg)}
+            />
+          )}
           {page === "tasks"   && <TasksView />}
-          {page === "topics"  && <TopicsView />}
-          {page === "league"  && <LeagueView />}
+          {page === "topics"  && <TopicsView onContinue={handleTopicContinue} />}
+          {page === "league"  && <LeagueView onStartQuickLgs={handleStartQuickLgs} />}
           {page === "friends" && <FriendsView />}
           {page === "profile" && <ProfileView user={user} charInfo={charInfo} />}
         </div>
@@ -751,6 +872,11 @@ export default function ChatPage() {
           })}
         </nav>
       </main>
+
+      <NotificationsDrawer
+        open={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+      />
     </div>
   );
 }
