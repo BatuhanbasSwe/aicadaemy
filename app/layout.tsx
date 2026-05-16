@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import AuthBootstrap from "@/components/AuthBootstrap";
 
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
@@ -35,6 +36,7 @@ export default function RootLayout({
       className={`${bricolage.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full bg-paper font-sans antialiased text-ink-900">
+        <AuthBootstrap />
         {children}
       </body>
     </html>

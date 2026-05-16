@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGameStore } from "@/lib/store/useGameStore";
+import { supabase } from "@/lib/supabase/client";
 import type { CharacterId } from "@/lib/types";
 import ChatCard from "@/components/ChatCard";
 import CuriosityTree from "@/components/CuriosityTree";
@@ -14,8 +15,9 @@ import {
   Search, Bell, Mail, Flame, Target, Calendar,
   Plus, Check, Clock, Timer, Zap, ArrowRight,
   Crown, Lightbulb, FileQuestion, GitBranch,
-  Sparkles, Copy, RefreshCw,
+  Sparkles, Copy, RefreshCw, LogOut,
 } from "lucide-react";
+import { signOut as supabaseSignOut } from "@/lib/supabase/auth";
 
 /* ── Character info ─────────────────────────────────────── */
 const CHAR_META: Record<CharacterId, { name: string; subject: string }> = {
@@ -997,6 +999,35 @@ function dicebearUrl(style: string, seed: string) {
   return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
 }
 
+function SignOutButton() {
+  const router = useRouter();
+  const signOutLocal = useGameStore((s) => s.signOutLocal);
+  const [busy, setBusy] = useState(false);
+
+  async function handleSignOut() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await supabaseSignOut();
+    } catch {
+      /* yine de local'i temizle */
+    }
+    signOutLocal();
+    router.replace("/login");
+  }
+
+  return (
+    <button
+      onClick={handleSignOut}
+      disabled={busy}
+      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-coral-50 border border-ink-200 hover:border-coral-500/40 text-coral-600 font-semibold text-[13px] transition shadow-card disabled:opacity-50"
+    >
+      <LogOut className="w-4 h-4" />
+      Hesaptan Çık
+    </button>
+  );
+}
+
 function ProfileView({ user, charInfo }: {
   user: { username: string; classLevel: number; inviteCode: string };
   charInfo: { name: string; subject: string };
@@ -1238,6 +1269,8 @@ function ProfileView({ user, charInfo }: {
             </div>
           </div>
 
+          <SignOutButton />
+
           <div className="bg-ink-950 text-white rounded-2xl p-5 relative overflow-hidden">
             <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-brand-500/30 blur-3xl" />
             <div className="relative">
@@ -1285,9 +1318,20 @@ export default function ChatPage() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
-    if (user === null) {
-      router.replace("/onboarding");
-    }
+    if (user !== null) return;
+    let cancelled = false;
+    // Store boş — gerçekten oturum yok mu, yoksa AuthBootstrap profili çekiyor mu?
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (!data.session?.user) {
+        router.replace("/login");
+      }
+      // Session varsa AuthBootstrap profile'i yükleyecek, store güncellenince bu effect tekrar tetiklenecek.
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [user, router]);
 
   if (!user) return null;

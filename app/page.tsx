@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGameStore } from "@/lib/store/useGameStore";
+import { supabase } from "@/lib/supabase/client";
 import { Compass } from "lucide-react";
 
 export default function Home() {
@@ -9,11 +10,28 @@ export default function Home() {
   const user = useGameStore((s) => s.user);
 
   useEffect(() => {
-    if (user) {
-      router.replace("/chat");
-    } else {
-      router.replace("/onboarding");
-    }
+    let cancelled = false;
+
+    (async () => {
+      // Önce store'a bak (hızlı)
+      if (user) {
+        router.replace("/chat");
+        return;
+      }
+      // Store boşsa Supabase session var mı?
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (data.session?.user) {
+        // AuthBootstrap profili yükleyecek; kısa süre sonra useEffect tekrar tetiklenir
+        router.replace("/chat");
+      } else {
+        router.replace("/login");
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, router]);
 
   return (

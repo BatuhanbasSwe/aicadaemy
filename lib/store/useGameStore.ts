@@ -10,6 +10,8 @@ import type {
   TreeNodeType,
   User,
 } from '@/lib/types';
+import type { ProfileRow, ProfileGameState } from '@/lib/supabase/types';
+import { saveGameState, inviteCodeFor } from '@/lib/supabase/auth';
 
 const emptyByDifficulty: ScoreState['byDifficulty'] = {
   kolay: { answered: 0, correct: 0 },
@@ -19,6 +21,7 @@ const emptyByDifficulty: ScoreState['byDifficulty'] = {
 
 interface GameState {
   user: User | null;
+  userId: string | null;          // Supabase auth.users.id
   selectedCharacter: CharacterId | null;
   messages: ChatMessage[];
   tree: { nodes: TreeNode[] };
@@ -27,6 +30,11 @@ interface GameState {
   // ---- actions (iskelet — implementasyon Faz 2-4 ----
   setUser: (user: User) => void;
   setCharacter: (id: CharacterId) => void;
+
+  // Supabase profil yükle (login/refresh sonrası)
+  loadFromProfile: (profile: ProfileRow) => void;
+  // Çıkış: state'i sıfırla, persist'i de temizle
+  signOutLocal: () => void;
 
   addMessage: (msg: ChatMessage) => void;
   resetConversation: () => void;
@@ -69,8 +77,9 @@ const genId = () =>
 
 export const useGameStore = create<GameState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
+      userId: null,
       selectedCharacter: null,
       messages: [],
       tree: { nodes: [] },
@@ -78,6 +87,33 @@ export const useGameStore = create<GameState>()(
 
       setUser: (user) => set({ user }),
       setCharacter: (id) => set({ selectedCharacter: id }),
+
+      loadFromProfile: (profile) => {
+        const gs = profile.game_state;
+        set({
+          userId: profile.id,
+          user: {
+            username: profile.username,
+            classLevel: profile.class_level,
+            inviteCode: inviteCodeFor(profile.username),
+          },
+          selectedCharacter: gs?.selectedCharacter ?? null,
+          messages: gs?.messages ?? [],
+          tree: gs?.tree ?? { nodes: [] },
+          score: gs?.score ?? initialScore,
+        });
+      },
+
+      signOutLocal: () => {
+        set({
+          user: null,
+          userId: null,
+          selectedCharacter: null,
+          messages: [],
+          tree: { nodes: [] },
+          score: initialScore,
+        });
+      },
 
       addMessage: (msg) =>
         set((s) => ({ messages: [...s.messages, msg] })),
