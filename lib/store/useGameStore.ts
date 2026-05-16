@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type {
+  ChatApiResponse,
   CharacterId,
   ChatMessage,
   LgsDifficulty,
@@ -33,10 +34,25 @@ interface GameState {
   addNode: (node: Omit<TreeNode, 'id' | 'createdAt'>) => string;
   promoteSuggested: (nodeId: string) => void;
 
+  // Sohbet turunun sonucunu ağaca işle:
+  // - root yoksa root (kullanıcı sorusu) oluştur
+  // - userMessage için "opened" düğüm (parent: lastOpened veya root)
+  // - response.followUpQuestions için 3 "suggested" düğüm (parent: yeni opened)
+  ingestChatTurn: (
+    userMessage: string,
+    response: ChatApiResponse,
+  ) => { openedId: string; suggestedIds: string[] };
+
+  // Çocuğun kendi yazdığı sorusu olarak "starred" düğüm ekle
+  addStarred: (content: string, parentId?: string | null) => string;
+
   recordLgsAnswer: (
     difficulty: LgsDifficulty,
     correct: boolean,
   ) => void;
+
+  // LGS doğru cevap için ağaca özel altın yıldız düğüm
+  addLgsCorrectNode: (question: string, parentId?: string | null) => string;
 
   reset: () => void;
 }
@@ -104,6 +120,114 @@ export const useGameStore = create<GameState>()(
               : s.score,
           };
         }),
+
+      ingestChatTurn: (userMessage, response) => {
+        const openedId = genId();
+        const suggestedIds = [genId(), genId(), genId()];
+        set((s) => {
+          const existing = s.tree.nodes;
+          const hasRoot = existing.some((n) => n.type === 'root');
+          const now = Date.now();
+          const newNodes: TreeNode[] = [];
+
+          let rootId: string | null = null;
+          if (!hasRoot) {
+            rootId = genId();
+            newNodes.push({
+              id: rootId,
+              parentId: null,
+              type: 'root',
+              content: userMessage,
+              createdAt: now,
+            });
+          }
+
+          const lastOpened = [...existing]
+            .reverse()
+            .find((n) => n.type === 'opened' || n.type === 'root');
+          const parentForOpened =
+            (lastOpened?.id ?? rootId) ?? null;
+
+          newNodes.push({
+            id: openedId,
+            parentId: hasRoot ? parentForOpened : rootId,
+            type: 'opened',
+            content: userMessage,
+            createdAt: now + 1,
+          });
+
+          response.followUpQuestions.forEach((q, i) => {
+            newNodes.push({
+              id: suggestedIds[i],
+              parentId: openedId,
+              type: 'suggested',
+              content: q,
+              createdAt: now + 2 + i,
+            });
+          });
+
+          return {
+            tree: { nodes: [...existing, ...newNodes] },
+            score: {
+              ...s.score,
+              nodesOpened: s.score.nodesOpened + 1,
+            },
+          };
+        });
+        return { openedId, suggestedIds };
+      },
+
+      addStarred: (content, parentId = null) => {
+        const id = genId();
+        set((s) => {
+          const lastOpened = [...s.tree.nodes]
+            .reverse()
+            .find((n) => n.type === 'opened' || n.type === 'root');
+          return {
+            tree: {
+              nodes: [
+                ...s.tree.nodes,
+                {
+                  id,
+                  parentId: parentId ?? lastOpened?.id ?? null,
+                  type: 'starred',
+                  content,
+                  createdAt: Date.now(),
+                },
+              ],
+            },
+            score: {
+              ...s.score,
+              nodesOpened: s.score.nodesOpened + 1,
+            },
+          };
+        });
+        return id;
+      },
+
+      addLgsCorrectNode: (question, parentId = null) => {
+        const id = genId();
+        set((s) => {
+          const lastOpened = [...s.tree.nodes]
+            .reverse()
+            .find((n) => n.type === 'opened');
+          return {
+            tree: {
+              nodes: [
+                ...s.tree.nodes,
+                {
+                  id,
+                  parentId: parentId ?? lastOpened?.id ?? null,
+                  type: 'lgs_correct',
+                  content: question,
+                  createdAt: Date.now(),
+                },
+              ],
+            },
+          };
+        });
+        return id;
+      },
 
       recordLgsAnswer: (difficulty, correct) =>
         set((s) => {
