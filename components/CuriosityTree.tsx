@@ -101,17 +101,21 @@ export default function CuriosityTree({ onNodeClick }: Props) {
     const svg = svgRef.current;
     if (!svg) return;
 
-    const W = svg.clientWidth || 560;
-    const H = svg.clientHeight || 240;
-    const pad = { top: 32, right: 24, bottom: 36, left: 24 };
+    // Fixed node spacing — nodes stay at their depth level regardless of how many siblings expand
+    const NODE_W = isFullscreen ? 220 : 180;
+    const LEVEL_H = isFullscreen ? 100 : 82;
+    const pad = { top: 48, right: 72, bottom: 56, left: 72 };
 
     d3.select(svg).selectAll("*").remove();
 
     const root = buildHierarchy(nodes);
     if (!root) {
+      const cW = svg.parentElement?.clientWidth || 400;
+      const cH = svg.parentElement?.clientHeight || 200;
+      d3.select(svg).attr("width", cW).attr("height", cH);
       d3.select(svg)
         .append("text")
-        .attr("x", W / 2).attr("y", H / 2)
+        .attr("x", cW / 2).attr("y", cH / 2)
         .attr("text-anchor", "middle")
         .attr("fill", "rgba(15,17,21,0.4)")
         .attr("font-size", "13")
@@ -130,15 +134,31 @@ export default function CuriosityTree({ onNodeClick }: Props) {
       }
     });
 
+    // nodeSize: each node gets a fixed horizontal + vertical cell so the tree
+    // always grows straight down — clicking a deep node never shifts the root up
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const treeLayout = d3.tree<any>().size([W - pad.left - pad.right, H - pad.top - pad.bottom]);
+    const treeLayout = d3.tree<any>().nodeSize([NODE_W, LEVEL_H]);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     treeLayout(root as any);
 
+    // Compute bounding box then size the SVG to fit the tree exactly
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const descs = (root as any).descendants() as any[];
+    let minX = Infinity, maxX = -Infinity;
+    descs.forEach((d: any) => {
+      if ((d.x as number) < minX) minX = d.x as number;
+      if ((d.x as number) > maxX) maxX = d.x as number;
+    });
+    const svgW = maxX - minX + NODE_W + pad.left + pad.right;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const svgH = ((root as any).height as number) * LEVEL_H + pad.top + pad.bottom;
+    d3.select(svg).attr("width", svgW).attr("height", svgH);
+
+    // Root is centered at top; all x coords are relative to root=0
     const g = d3
       .select(svg)
       .append("g")
-      .attr("transform", `translate(${pad.left},${pad.top})`);
+      .attr("transform", `translate(${-minX + NODE_W / 2 + pad.left}, ${pad.top})`);
 
     // Links
     g.selectAll(".link")
@@ -300,8 +320,8 @@ export default function CuriosityTree({ onNodeClick }: Props) {
         </button>
       </div>
 
-      <div className="relative flex-1 min-h-[160px] rounded-xl border border-ink-200 bg-paper dotgrid overflow-hidden">
-        <svg ref={svgRef} className="w-full h-full block" />
+      <div className="relative flex-1 min-h-[160px] rounded-xl border border-ink-200 bg-paper dotgrid overflow-auto">
+        <svg ref={svgRef} className="block" />
 
         <div className="absolute top-2 right-2 flex flex-col gap-0.5">
           {[

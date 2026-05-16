@@ -189,8 +189,11 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
   }, [addNode, charMeta.subject]);
 
   /* Tree → Chat: ağaçtan gelen mesajı otomatik gönder */
+  const sentExternalRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!externalMessage) return;
+    if (!externalMessage) { sentExternalRef.current = null; return; }
+    if (externalMessage === sentExternalRef.current) return;
+    sentExternalRef.current = externalMessage;
     sendMessage(externalMessage);
     onExternalSent?.();
   // sendMessage intentionally omitted — it's defined below in the same closure
@@ -208,10 +211,6 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
 
     const userMsgId = `${Date.now()}-u`;
     addMessage({ id: userMsgId, role: "user", content: trimmed, createdAt: Date.now() });
-
-    // Add starred node for user's own question
-    const rootId = useGameStore.getState().tree.nodes[0]?.id ?? null;
-    addNode({ parentId: rootId, type: "starred", content: trimmed });
 
     const history = messages.slice(-16).map((m) => ({ role: m.role, content: m.content }));
     const reqBody: ChatApiRequest = {

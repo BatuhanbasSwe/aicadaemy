@@ -1,23 +1,129 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { useGameStore } from "@/lib/store/useGameStore";
 import { supabase } from "@/lib/supabase/client";
-import type { CharacterId } from "@/lib/types";
+import type { CharacterId, TreeNode } from "@/lib/types";
 import ChatCard from "@/components/ChatCard";
-import CuriosityTree from "@/components/CuriosityTree";
 import TasksCard from "@/components/TasksCard";
 import FriendList from "@/components/FriendList";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
 import DailyChallenge from "@/components/DailyChallenge";
+import CuriosityTree from "@/components/CuriosityTree";
 import {
   Compass, Home, ListChecks, BookOpen, Trophy, Users, User,
   Search, Bell, Mail, Flame, Target, Calendar,
   Plus, Check, Clock, Timer, Zap, ArrowRight,
   Crown, Lightbulb, FileQuestion, GitBranch,
-  Sparkles, Copy, RefreshCw, LogOut,
+  Sparkles, Copy, RefreshCw, LogOut, Maximize2, X,
 } from "lucide-react";
 import { signOut as supabaseSignOut } from "@/lib/supabase/auth";
+
+/* ── Tree node colors (sidebar version — muted for dark bg) */
+const TREE_DOT: Record<string, string> = {
+  root:        "#E8B83A",
+  opened:      "#5E8BC3",
+  suggested:   "#6B6B6B",
+  starred:     "#EC4899",
+  lgs_correct: "#3FAE82",
+};
+
+/* ── Sidebar curiosity tree (simple list, no D3) */
+function SidebarTree({
+  nodes,
+  charId,
+  onNodeClick,
+  onOpenFullscreen,
+}: {
+  nodes: TreeNode[];
+  charId: CharacterId | null;
+  onNodeClick: (msg: string) => void;
+  onOpenFullscreen: () => void;
+}) {
+  const [open, setOpen] = useState(true);
+  const subject = charId ? CHAR_META_MINI[charId] : null;
+
+  // Build parent→children map; skip suggested in sidebar (too noisy)
+  const visible = nodes.filter((n) => n.type !== "suggested");
+  const childrenOf = new Map<string | null, TreeNode[]>();
+  visible.forEach((n) => {
+    const key = n.parentId ?? null;
+    if (!childrenOf.has(key)) childrenOf.set(key, []);
+    childrenOf.get(key)!.push(n);
+  });
+
+  const renderLevel = (parentId: string | null, depth: number): React.ReactNode =>
+    (childrenOf.get(parentId) ?? []).map((node) => (
+      <div key={node.id}>
+        <button
+          onClick={() => node.type !== "root" && onNodeClick(node.content)}
+          className={`w-full flex items-center gap-1.5 py-1 rounded-md text-left transition ${
+            node.type === "root"
+              ? "cursor-default text-white/35 text-[10.5px]"
+              : "text-white/60 hover:text-white hover:bg-white/5 text-[11.5px]"
+          }`}
+          style={{ paddingLeft: `${8 + depth * 10}px` }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full shrink-0"
+            style={{ background: TREE_DOT[node.type] ?? "#6B6B6B" }}
+          />
+          <span className="truncate">{node.content.length > 26 ? node.content.slice(0, 25) + "…" : node.content}</span>
+        </button>
+        {renderLevel(node.id, depth + 1)}
+      </div>
+    ));
+
+  return (
+    <div className="ml-3 mt-1 mb-2 pl-2 border-l border-white/10">
+      <div className="flex items-center justify-between pr-1 mb-1">
+        <button
+          onClick={() => setOpen((s) => !s)}
+          className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-white/30 font-semibold hover:text-white/55 transition"
+        >
+          <span>Merak Ağacı</span>
+          <span className="text-[8px]">{open ? "▲" : "▼"}</span>
+        </button>
+        <button
+          onClick={onOpenFullscreen}
+          title="Tam ekranda aç"
+          className="text-white/25 hover:text-white/60 transition p-0.5 rounded"
+        >
+          <Maximize2 className="w-3 h-3" />
+        </button>
+      </div>
+
+      {open && (
+        <div className="space-y-0">
+          {nodes.length === 0 ? (
+            <div className="px-2 py-1 text-[10.5px] text-white/20 italic">
+              Sohbet başlayınca ağaç büyür 🌱
+            </div>
+          ) : (
+            <div>
+              {subject && (
+                <div className="px-2 py-0.5 text-[10px] font-bold text-white/30 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full" style={{ background: TREE_DOT.root }} />
+                  {subject}
+                </div>
+              )}
+              {renderLevel(null, 0)}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const CHAR_META_MINI: Record<CharacterId, string> = {
+  ataturk:     "T.C. İnkılap Tarihi",
+  cahit_arf:   "Matematik",
+  aziz_sancar: "Fen Bilimleri",
+  yunus_emre:  "Türkçe",
+  mevlana:     "Din Kültürü",
+  shakespeare: "İngilizce",
+};
 
 /* ── Character info ─────────────────────────────────────── */
 const CHAR_META: Record<CharacterId, { name: string; subject: string }> = {
@@ -55,14 +161,19 @@ const PAGE_META: Record<PageId, { title: string; subtitle: string }> = {
    ══════════════════════════════════════════════════════════ */
 function Sidebar({
   active, onChange, taskCount, onOpenNotifications,
+  treeNodes, treeCharId, onTreeNodeClick, onOpenTreeFullscreen,
 }: {
   active: PageId;
   onChange: (p: PageId) => void;
   taskCount: number;
   onOpenNotifications: () => void;
+  treeNodes: TreeNode[];
+  treeCharId: CharacterId | null;
+  onTreeNodeClick: (msg: string) => void;
+  onOpenTreeFullscreen: () => void;
 }) {
   return (
-    <aside className="w-[244px] shrink-0 bg-ink-950 text-white/85 flex flex-col h-full">
+    <aside className="w-[260px] shrink-0 bg-ink-950 text-white/85 flex flex-col h-full">
       <div className="px-5 pt-5 pb-4 flex items-center gap-2.5 shrink-0">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
           <Compass className="w-[18px] h-[18px] text-white" strokeWidth={2.5} />
@@ -80,26 +191,35 @@ function Sidebar({
             const isActive = id === active;
             const dynBadge = id === "tasks" && taskCount ? taskCount : badge;
             return (
-              <button
-                key={id}
-                onClick={() => onChange(id)}
-                className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] transition relative ${
-                  isActive
-                    ? "bg-white/8 text-white font-semibold"
-                    : "text-white/65 hover:text-white hover:bg-white/5 font-medium"
-                }`}
-              >
-                {isActive && (
-                  <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-coral-500" />
+              <Fragment key={id}>
+                <button
+                  onClick={() => onChange(id)}
+                  className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13.5px] transition relative ${
+                    isActive
+                      ? "bg-white/8 text-white font-semibold"
+                      : "text-white/65 hover:text-white hover:bg-white/5 font-medium"
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-coral-500" />
+                  )}
+                  <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={isActive ? 2.5 : 2} />
+                  <span className="flex-1 text-left">{label}</span>
+                  {dynBadge && (
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${id === "tasks" ? "bg-white/10 text-white/90" : "bg-coral-500 text-white"}`}>
+                      {dynBadge}
+                    </span>
+                  )}
+                </button>
+                {id === "topics" && (
+                  <SidebarTree
+                    nodes={treeNodes}
+                    charId={treeCharId}
+                    onNodeClick={onTreeNodeClick}
+                    onOpenFullscreen={onOpenTreeFullscreen}
+                  />
                 )}
-                <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={isActive ? 2.5 : 2} />
-                <span className="flex-1 text-left">{label}</span>
-                {dynBadge && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${id === "tasks" ? "bg-white/10 text-white/90" : "bg-coral-500 text-white"}`}>
-                    {dynBadge}
-                  </span>
-                )}
-              </button>
+              </Fragment>
             );
           })}
         </div>
@@ -237,12 +357,10 @@ function HomeView({
   onGoToTasks,
   externalMessage,
   onExternalSent,
-  onTreeNodeClick,
 }: {
   onGoToTasks: () => void;
   externalMessage: string | null;
   onExternalSent: () => void;
-  onTreeNodeClick: (msg: string) => void;
 }) {
   const score = useGameStore((s) => s.score);
   const accuracy = score.lgsAnswered > 0
@@ -264,20 +382,17 @@ function HomeView({
       </div>
 
       {/* Main grid - fills remaining height */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-3 min-h-0">
-        {/* Chat — 60% */}
-        <div className="lg:col-span-3 min-h-0 flex flex-col">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-3 min-h-0">
+        {/* Chat — 2/3 */}
+        <div className="lg:col-span-2 min-h-0 flex flex-col">
           <ChatCard
             externalMessage={externalMessage}
             onExternalSent={onExternalSent}
           />
         </div>
-        {/* Right panel — 40% : Tasks + Tree (fit in viewport) */}
-        <div className="lg:col-span-2 flex flex-col gap-3 min-h-0">
+        {/* Right panel — 1/3 : Tasks */}
+        <div className="lg:col-span-1 flex flex-col gap-3 min-h-0">
           <TasksCard onSeeAll={onGoToTasks} />
-          <div className="flex-1 min-h-0">
-            <CuriosityTree onNodeClick={(node) => onTreeNodeClick(node.content)} />
-          </div>
         </div>
       </div>
     </div>
@@ -1312,6 +1427,7 @@ export default function ChatPage() {
   const selectedCharacter = useGameStore((s) => s.selectedCharacter);
   const setCharacter      = useGameStore((s) => s.setCharacter);
   const resetConversation = useGameStore((s) => s.resetConversation);
+  const treeNodes         = useGameStore((s) => s.tree.nodes);
 
   const [page, setPage] = useState<PageId>("home");
   const [externalMessage, setExternalMessage] = useState<string | null>(null);
@@ -1369,6 +1485,9 @@ export default function ChatPage() {
           onChange={setPage}
           taskCount={todayLeft}
           onOpenNotifications={() => setNotificationsOpen(true)}
+          treeNodes={treeNodes}
+          treeCharId={selectedCharacter}
+          onTreeNodeClick={(msg) => { setExternalMessage(msg); setPage("home"); }}
         />
       </div>
 
@@ -1388,7 +1507,6 @@ export default function ChatPage() {
               onGoToTasks={() => setPage("tasks")}
               externalMessage={externalMessage}
               onExternalSent={() => setExternalMessage(null)}
-              onTreeNodeClick={(msg) => setExternalMessage(msg)}
             />
           )}
           {page === "tasks"   && <TasksView />}
