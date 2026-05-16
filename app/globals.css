@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* ── Palette ─────────────────────────────────────────── */
+  --color-paper:      #F7F5F0;
+
+  --color-ink-950:    #0E1015;
+  --color-ink-900:    #16181F;
+  --color-ink-800:    #1F232C;
+  --color-ink-700:    #2A2F3A;
+  --color-ink-500:    #6B7280;
+  --color-ink-400:    #9CA3AF;
+  --color-ink-300:    #D1D5DB;
+  --color-ink-200:    #E7E3DA;
+  --color-ink-100:    #EFECE4;
+
+  --color-brand-50:   #F1EFFB;
+  --color-brand-100:  #E4DEF7;
+  --color-brand-300:  #A99BEA;
+  --color-brand-500:  #6B57DC;
+  --color-brand-600:  #5C48CC;
+  --color-brand-700:  #4A38AE;
+
+  --color-coral-100:  #FBE6D8;
+  --color-coral-500:  #E58A5A;
+  --color-coral-600:  #D87646;
+
+  --color-mint-100:   #DDEFE6;
+  --color-mint-500:   #3FAE82;
+
+  --color-sky-100:    #DCE8F5;
+  --color-sky-500:    #5E8BC3;
+
+  --color-sun-100:    #FBEEC8;
+  --color-sun-500:    #E8B83A;
+
+  /* ── Shadows ─────────────────────────────────────────── */
+  --shadow-card: 0 1px 2px rgba(15,17,21,0.03), 0 1px 3px rgba(15,17,21,0.04);
+  --shadow-pop:  0 6px 24px -8px rgba(15,17,21,0.18), 0 2px 6px rgba(15,17,21,0.06);
 }
 
+/* Link Google fonts CSS variables into Tailwind utilities */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-sans:    var(--font-plus-jakarta), system-ui, sans-serif;
+  --font-mono:    var(--font-jetbrains), monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+html, body { background: #F7F5F0; }
+body { color: #16181F; }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ── Scrollbars ──────────────────────────────────────────── */
+.nice-scroll::-webkit-scrollbar          { width: 8px; height: 8px; }
+.nice-scroll::-webkit-scrollbar-track   { background: transparent; }
+.nice-scroll::-webkit-scrollbar-thumb   { background: rgba(15,17,21,0.10); border-radius: 999px; }
+.nice-scroll::-webkit-scrollbar-thumb:hover { background: rgba(15,17,21,0.18); }
+
+.sidebar-scroll::-webkit-scrollbar       { width: 6px; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 999px; }
+
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp .35s ease-out both; }
+
+@keyframes typingDot {
+  0%, 80%, 100% { transform: scale(.55); opacity: .35; }
+  40%           { transform: scale(1);   opacity: 1; }
+}
+.typing-dot { animation: typingDot 1.2s infinite ease-in-out; }
+
+/* ── Dot-grid background (used by tree) ─────────────────── */
+.dotgrid {
+  background-image: radial-gradient(circle, rgba(15,17,21,0.08) 1px, transparent 1.2px);
+  background-size: 16px 16px;
 }
