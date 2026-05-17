@@ -32,9 +32,6 @@ function buildHierarchy(nodes: TreeNode[]): d3.HierarchyNode<NodeWithChildren> |
   return d3.hierarchy(nodeMap.get(root.id)!);
 }
 
-function shorten(text: string, max = 22) {
-  return text.length > max ? text.slice(0, max - 1) + "…" : text;
-}
 
 interface Props {
   onNodeClick?: (node: TreeNode) => void;
@@ -52,16 +49,14 @@ export default function CuriosityTree({ onNodeClick }: Props) {
   // Default: root + tüm "opened" depth=1'e kadar görünür. Daha derin için tıkla.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // Yeni node'lar eklendiğinde otomatik en son opened'i expand et (yeni dallar görünsün)
+  // Tüm opened node'ları otomatik expand et — öneriler her zaman aşağıda görünsün
   useEffect(() => {
     setExpanded((prev) => {
       const root = nodes.find((n) => n.parentId === null);
       if (!root) return prev;
       const next = new Set(prev);
       next.add(root.id);
-      // En son eklenen opened'i de aç ki kullanıcı yeni dalları görsün
-      const lastOpened = [...nodes].reverse().find((n) => n.type === "opened");
-      if (lastOpened) next.add(lastOpened.id);
+      nodes.filter((n) => n.type === "opened").forEach((n) => next.add(n.id));
       return next;
     });
   }, [nodes]);
@@ -104,7 +99,7 @@ export default function CuriosityTree({ onNodeClick }: Props) {
     // Fixed node spacing — nodes stay at their depth level regardless of how many siblings expand
     const NODE_W = isFullscreen ? 220 : 180;
     const LEVEL_H = isFullscreen ? 100 : 82;
-    const pad = { top: 48, right: 72, bottom: 56, left: 72 };
+    const pad = { top: 48, right: 72, bottom: 100, left: 72 };
 
     d3.select(svg).selectAll("*").remove();
 
@@ -200,6 +195,8 @@ export default function CuriosityTree({ onNodeClick }: Props) {
 
         if (d.data.type === "suggested") {
           promoteSuggested(d.data.id);
+          // Immediately add to expanded so children will render as soon as API responds
+          setExpanded((prev) => { const next = new Set(prev); next.add(d.data.id); return next; });
           return;
         }
         const id = d.data.id;

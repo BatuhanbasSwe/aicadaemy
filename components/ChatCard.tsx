@@ -162,6 +162,7 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [charId]);
 
+
   /* Tree → Chat: dış mesajı otomatik gönder (suggested düğüm tıklandığında) */
   const sentExternalRef = useRef<string | null>(null);
   useEffect(() => {

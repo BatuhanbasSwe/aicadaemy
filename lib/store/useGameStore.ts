@@ -26,6 +26,7 @@ interface GameState {
   messages: ChatMessage[];
   tree: { nodes: TreeNode[] };
   score: ScoreState;
+  studiedUnitIds: string[];
 
   // ---- actions (iskelet — implementasyon Faz 2-4 ----
   setUser: (user: User) => void;
@@ -62,6 +63,8 @@ interface GameState {
   // LGS doğru cevap için ağaca özel altın yıldız düğüm
   addLgsCorrectNode: (question: string, parentId?: string | null) => string;
 
+  markUnitStudied: (unitId: string) => void;
+
   reset: () => void;
 }
 
@@ -84,6 +87,7 @@ export const useGameStore = create<GameState>()(
       messages: [],
       tree: { nodes: [] },
       score: initialScore,
+      studiedUnitIds: [],
 
       setUser: (user) => set({ user }),
       setCharacter: (id) => set({ selectedCharacter: id }),
@@ -112,12 +116,13 @@ export const useGameStore = create<GameState>()(
           messages: [],
           tree: { nodes: [] },
           score: initialScore,
+          studiedUnitIds: [],
         });
       },
 
       addMessage: (msg) =>
         set((s) => ({ messages: [...s.messages, msg] })),
-      resetConversation: () => set({ messages: [] }),
+      resetConversation: () => set({ messages: [], tree: { nodes: [] } }),
 
       addNode: (partial) => {
         const id = genId();
@@ -284,6 +289,13 @@ export const useGameStore = create<GameState>()(
           };
         }),
 
+      markUnitStudied: (unitId) =>
+        set((s) => ({
+          studiedUnitIds: s.studiedUnitIds.includes(unitId)
+            ? s.studiedUnitIds
+            : [...s.studiedUnitIds, unitId],
+        })),
+
       reset: () =>
         set({
           user: null,
@@ -291,6 +303,7 @@ export const useGameStore = create<GameState>()(
           messages: [],
           tree: { nodes: [] },
           score: initialScore,
+          studiedUnitIds: [],
         }),
     }),
     { name: 'lgs-kasifi-store' },

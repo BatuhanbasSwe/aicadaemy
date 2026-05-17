@@ -6,10 +6,12 @@ import { supabase } from "@/lib/supabase/client";
 import type { CharacterId, TreeNode } from "@/lib/types";
 import ChatCard from "@/components/ChatCard";
 import TasksCard from "@/components/TasksCard";
+import MufredatView from "@/components/MufredatView";
 import FriendList from "@/components/FriendList";
 import NotificationsDrawer from "@/components/NotificationsDrawer";
 import DailyChallenge from "@/components/DailyChallenge";
 import CuriosityTree from "@/components/CuriosityTree";
+import CalendarView from "@/components/CalendarView";
 import {
   Compass, Home, ListChecks, BookOpen, Trophy, Users, User,
   Search, Bell, Mail, Flame, Target, Calendar,
@@ -268,10 +270,12 @@ function HomeView({
   onGoToTasks,
   externalMessage,
   onExternalSent,
+  chatKey,
 }: {
   onGoToTasks: () => void;
   externalMessage: string | null;
   onExternalSent: () => void;
+  chatKey: number;
 }) {
   const score = useGameStore((s) => s.score);
   const accuracy = score.lgsAnswered > 0
@@ -297,6 +301,7 @@ function HomeView({
         {/* Chat — 2/3 */}
         <div className="lg:col-span-2 min-h-0 flex flex-col">
           <ChatCard
+            key={chatKey}
             externalMessage={externalMessage}
             onExternalSent={onExternalSent}
           />
@@ -1793,6 +1798,7 @@ export default function ChatPage() {
   const [page, setPage] = useState<PageId>("home");
   const [externalMessage, setExternalMessage] = useState<string | null>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [chatKey, setChatKey] = useState(0);
 
   useEffect(() => {
     if (user !== null) return;
@@ -1818,16 +1824,15 @@ export default function ChatPage() {
   const meta = PAGE_META[page];
   const todayLeft = 3;
 
-  /** Konular > "Devam et" tıklanınca: karakteri seç, gerekirse konuşmayı sıfırla, home'a git ve mesaj yolla */
+  /** Konular > "Devam et" tıklanınca: her zaman sıfırla, karakteri seç, home'a git, mesaj yolla */
   const handleTopicContinue = (
     nextCharacterId: CharacterId,
-    topicName: string,
+    _topicName: string,
     nextUnit: string,
   ) => {
-    if (selectedCharacter !== nextCharacterId) {
-      resetConversation();
-      setCharacter(nextCharacterId);
-    }
+    resetConversation();
+    setCharacter(nextCharacterId);
+    setChatKey((k) => k + 1); // ChatCard remount → rootInitialised ref sıfırlanır
     setExternalMessage(`Merhaba, "${nextUnit}" konusuna geçmek istiyorum. Beni biraz hazırlar mısın?`);
     setPage("home");
   };
@@ -1869,10 +1874,11 @@ export default function ChatPage() {
               onGoToTasks={() => setPage("tasks")}
               externalMessage={externalMessage}
               onExternalSent={() => setExternalMessage(null)}
+              chatKey={chatKey}
             />
           )}
-          {page === "tasks"   && <TasksView />}
-          {page === "topics"  && <TopicsView onContinue={handleTopicContinue} />}
+          {page === "tasks"   && <CalendarView />}
+          {page === "topics"  && <MufredatView onContinue={handleTopicContinue} onStudyWithTeacher={(charId, unitTitle) => { handleTopicContinue(charId, unitTitle, unitTitle); }} />}
           {page === "tree"    && (
             <TreeView
               externalMessage={externalMessage}
