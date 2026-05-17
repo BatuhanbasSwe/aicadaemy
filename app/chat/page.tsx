@@ -55,9 +55,9 @@ type PageId = "home" | "tasks" | "topics" | "tree" | "league" | "friends" | "pro
 
 const NAV: { id: PageId; label: string; Icon: React.ElementType; badge?: number }[] = [
   { id: "tree",    label: "Anasayfa",     Icon: Network },
-  { id: "tasks",   label: "Görevler",     Icon: ListChecks },
   { id: "topics",  label: "Dersler",      Icon: BookOpen },
   { id: "lgs",     label: "LGS Soruları", Icon: FileQuestion },
+  { id: "takvim",  label: "Takvim",       Icon: Calendar },
   { id: "league",  label: "Lig",          Icon: Trophy },
   { id: "friends", label: "Arkadaşlar",   Icon: Users, badge: 2 },
   { id: "profile", label: "Profil",       Icon: User },
@@ -73,7 +73,7 @@ const PAGE_META: Record<PageId, { title: string; subtitle: string }> = {
   friends: { title: "Arkadaşlar",   subtitle: "Birlikte çalış, birlikte yüksel" },
   profile: { title: "Profil",       subtitle: "Hesabın ve istatistiklerin" },
   goals:   { title: "Hedeflerim",   subtitle: "Günlük ve haftalık hedefler" },
-  takvim:  { title: "Takvim",       subtitle: "Mayıs 2026 · Ders programı ve sınavlar" },
+  takvim:  { title: "Takvim",       subtitle: "2026 ders programı · etkinlik ekle, sınavlarını planla" },
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -140,7 +140,6 @@ function Sidebar({
         <div className="space-y-0.5">
           {[
             { label: "Hedeflerim", Icon: Target,   onClick: () => onChange("goals") },
-            { label: "Takvim",     Icon: Calendar, onClick: () => onChange("takvim") },
             { label: "Bildirimler",Icon: Bell,     onClick: onOpenNotifications },
           ].map(({ label, Icon, onClick }) => (
             <button
@@ -1876,7 +1875,6 @@ export default function ChatPage() {
               chatKey={chatKey}
             />
           )}
-          {page === "tasks"   && <CalendarView />}
           {page === "topics"  && <MufredatView onContinue={handleTopicContinue} onStudyWithTeacher={(charId, unitTitle) => { handleTopicContinue(charId, unitTitle, unitTitle); }} />}
           {page === "tree"    && (
             <TreeView
@@ -1888,7 +1886,7 @@ export default function ChatPage() {
           {page === "lgs"     && <LgsQuizView />}
           {page === "league"  && <LeagueView onStartQuickLgs={handleStartQuickLgs} />}
           {page === "goals"   && <GoalsView />}
-          {page === "takvim"  && <TakvimView />}
+          {page === "takvim"  && <CalendarView />}
           {page === "friends" && <FriendsView />}
           {page === "profile" && <ProfileView user={user} charInfo={charInfo} />}
         </div>
