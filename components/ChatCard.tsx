@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useGameStore } from "@/lib/store/useGameStore";
-import type { ChatApiRequest, ChatApiResponse, CharacterId, LgsQuestion } from "@/lib/types";
+import type { ChatApiRequest, ChatApiResponse, CharacterId, LgsQuestion, TreeNodeType } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowUp, Paperclip, Volume2, StopCircle, RefreshCw,
@@ -128,7 +128,7 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
   const messages          = useGameStore((s) => s.messages);
   const selectedCharacter = useGameStore((s) => s.selectedCharacter);
   const user              = useGameStore((s) => s.user);
-  const { addMessage, resetConversation, addNode, addStarred, ingestChatTurn } = useGameStore();
+  const { addMessage, resetConversation, ingestChatTurn } = useGameStore();
 
   const [input, setInput]           = useState("");
   const [isTyping, setIsTyping]     = useState(false);
@@ -139,6 +139,7 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
   const charId   = selectedCharacter ?? "ataturk";
   const charDef  = CHARACTERS[charId];
   const meta     = CHAR_META[charId];
+  const openingAddedRef = useRef(false);
 
   /* Auto-scroll */
   useEffect(() => {
@@ -146,13 +147,14 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isTyping, pendingLgs]);
 
-  /* Adventure opening message on first load */
+  /* Adventure opening message — sadece sohbet tamamen boşken, bir kez */
   useEffect(() => {
-    if (messages.length > 0) return;
+    if (openingAddedRef.current || messages.length > 0) return;
+    openingAddedRef.current = true;
     const adventure = getAdventureByCharacter(charId);
     const opening   = adventure?.openingPrompt ?? charDef?.greeting ?? "Merhaba! Seni bekliyordum. Ne öğrenmek istiyorsun?";
     addMessage({
-      id:        `opening-${charId}-${Date.now()}`,
+      id:        `opening-${charId}`,
       role:      "character",
       content:   opening,
       createdAt: Date.now(),
@@ -202,9 +204,24 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
     useGameStore.setState({ tree: { nodes: [] } });
     setPendingLgs(null);
     stopSpeaking();
+    openingAddedRef.current = false; // yeni sohbette opening tekrar gösterilsin
   }, [resetConversation, stopSpeaking]);
 
+  /* ── Yardımcı: ingestChatTurn sonrası opened düğümü starred'a çevir ── */
+  function promoteToStarred(openedId: string) {
+    useGameStore.setState((s) => ({
+      tree: {
+        nodes: s.tree.nodes.map((n) =>
+          n.id === openedId ? { ...n, type: "starred" as TreeNodeType } : n
+        ),
+      },
+    }));
+  }
+
   /* ── Ana mesaj gönderme fonksiyonu ─────────────────────── */
+  // Her mesaj için ingestChatTurn kullanılır — tek kök garantisi.
+  // Kullanıcının kendi yazdığı soru (fromFollowUp=false) → opened düğüm
+  // retroaktif olarak starred'a çevrilir (pembe yıldız).
   async function sendMessage(text: string, opts: { fromFollowUp?: boolean } = {}) {
     const trimmed = text.trim();
     if (!trimmed || isTyping) return;
@@ -213,13 +230,7 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
     setIsTyping(true);
     setPendingLgs(null);
 
-    const userMsgId = `${Date.now()}-u`;
-    addMessage({ id: userMsgId, role: "user", content: trimmed, createdAt: Date.now() });
-
-    // Kullanıcı kendi yazdıysa → starred (pembe yıldız) düğüm
-    if (!opts.fromFollowUp) {
-      addStarred(trimmed);
-    }
+    addMessage({ id: `${Date.now()}-u`, role: "user", content: trimmed, createdAt: Date.now() });
 
     const history = messages.slice(-16).map((m) => ({ role: m.role, content: m.content }));
     const reqBody: ChatApiRequest = {
@@ -246,33 +257,24 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
         createdAt:         Date.now(),
       });
 
-      if (opts.fromFollowUp) {
-        // Takip sorusu → ingestChatTurn (opened + 3 suggested atomik)
-        ingestChatTurn(trimmed, data);
-      } else {
-        // Kullanıcı sorusu → starred zaten eklendi, sadece 3 suggested ekle
-        const nodes = useGameStore.getState().tree.nodes;
-        const starredNode = [...nodes].reverse().find((n) => n.type === "starred" && n.content === trimmed);
-        data.followUpQuestions.forEach((q) =>
-          addNode({ parentId: starredNode?.id ?? null, type: "suggested", content: q })
-        );
-      }
+      // Her durumda ingestChatTurn → tek kök, temiz hiyerarşi
+      const { openedId } = ingestChatTurn(trimmed, data);
+      // Kullanıcının kendi yazdığı soru → pembe yıldız
+      if (!opts.fromFollowUp) promoteToStarred(openedId);
 
       // LGS sorusu enjeksiyonu
       if (data.shouldInjectLgsQuestion && data.suggestedLgsQuestionId) {
         try {
           const lgsRes = await fetch(`/api/chat?lgsId=${encodeURIComponent(data.suggestedLgsQuestionId)}`);
           if (lgsRes.ok) setPendingLgs(await lgsRes.json());
-        } catch {
-          // LGS sorusu çekilemedi, sessizce geç
-        }
+        } catch { /* sessizce geç */ }
       }
     } catch {
-      // Stub fallback
+      // Stub fallback (API hazır değilken)
       const fb = FALLBACKS[charId] ?? FALLBACKS.ataturk;
       const fakeResponse: ChatApiResponse = {
-        answer:                 fb.answer,
-        followUpQuestions:      fb.followUps,
+        answer:                  fb.answer,
+        followUpQuestions:       fb.followUps,
         shouldInjectLgsQuestion: false,
         suggestedLgsQuestionId:  null,
       };
@@ -283,14 +285,19 @@ export default function ChatCard({ externalMessage, onExternalSent }: ChatCardPr
         followUpQuestions: fb.followUps,
         createdAt:         Date.now(),
       });
-      if (opts.fromFollowUp) {
-        ingestChatTurn(trimmed, fakeResponse);
-      } else {
-        const nodes = useGameStore.getState().tree.nodes;
-        const starredNode = [...nodes].reverse().find((n) => n.type === "starred" && n.content === trimmed);
-        fb.followUps.forEach((q) =>
-          addNode({ parentId: starredNode?.id ?? null, type: "suggested", content: q })
-        );
+      const { openedId } = ingestChatTurn(trimmed, fakeResponse);
+      if (!opts.fromFollowUp) promoteToStarred(openedId);
+
+      // 3 mesajda bir stub LGS sorusu göster
+      if (messages.length > 0 && messages.length % 3 === 0) {
+        const { LGS_QUESTIONS } = await import("@/lib/content/lgs-questions");
+        const subjectMap: Record<string, string> = {
+          ataturk: "inkilap", cahit_arf: "matematik", aziz_sancar: "fen",
+          yunus_emre: "turkce", mevlana: "din", shakespeare: "ingilizce",
+        };
+        const subj = subjectMap[charId];
+        const pool = LGS_QUESTIONS.filter((q) => q.subject === subj);
+        if (pool.length > 0) setPendingLgs(pool[Math.floor(Math.random() * pool.length)]);
       }
     } finally {
       setIsTyping(false);

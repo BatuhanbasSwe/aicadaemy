@@ -18,6 +18,8 @@ import {
   Sparkles, Copy, RefreshCw, LogOut, Maximize2, X, Network,
 } from "lucide-react";
 import { signOut as supabaseSignOut } from "@/lib/supabase/auth";
+import { LGS_QUESTIONS } from "@/lib/content/lgs-questions";
+import LgsQuestionCard from "@/components/LgsQuestionCard";
 
 /* ── Tree node colors (sidebar version — muted for dark bg) */
 const TREE_DOT: Record<string, string> = {
@@ -47,27 +49,30 @@ const CHAR_META: Record<CharacterId, { name: string; subject: string }> = {
   shakespeare: { name: "William Shakespeare",        subject: "İngilizce" },
 };
 
-type PageId = "home" | "tasks" | "topics" | "tree" | "league" | "friends" | "profile" | "goals";
+type PageId = "home" | "tasks" | "topics" | "tree" | "league" | "friends" | "profile" | "goals" | "takvim" | "lgs";
 
 const NAV: { id: PageId; label: string; Icon: React.ElementType; badge?: number }[] = [
-  { id: "home",    label: "Anasayfa",   Icon: Home },
-  { id: "tasks",   label: "Görevler",   Icon: ListChecks },
-  { id: "topics",  label: "Konular",    Icon: BookOpen },
-  { id: "tree",    label: "Merak Ağacı",Icon: Network },
-  { id: "league",  label: "Lig",        Icon: Trophy },
-  { id: "friends", label: "Arkadaşlar", Icon: Users, badge: 2 },
-  { id: "profile", label: "Profil",     Icon: User },
+  { id: "home",    label: "Anasayfa",     Icon: Home },
+  { id: "tasks",   label: "Görevler",     Icon: ListChecks },
+  { id: "topics",  label: "Dersler",      Icon: BookOpen },
+  { id: "lgs",     label: "LGS Soruları", Icon: FileQuestion },
+  { id: "tree",    label: "Merak Ağacı",  Icon: Network },
+  { id: "league",  label: "Lig",          Icon: Trophy },
+  { id: "friends", label: "Arkadaşlar",   Icon: Users, badge: 2 },
+  { id: "profile", label: "Profil",       Icon: User },
 ];
 
 const PAGE_META: Record<PageId, { title: string; subtitle: string }> = {
-  home:    { title: "Anasayfa",   subtitle: "Bugün ne keşfedeceğiz?" },
-  tasks:   { title: "Görevler",   subtitle: "Günlük planını yap, XP'yi topla" },
-  topics:  { title: "Konular",    subtitle: "LGS 8. sınıf müfredatı · 6 ders" },
-  tree:    { title: "Merak Ağacı",subtitle: "Keşfettiğin kavramlar ve bağlantılar" },
-  league:  { title: "Lig",        subtitle: "Altın Lig · Haftalık sıralama" },
-  friends: { title: "Arkadaşlar", subtitle: "Birlikte çalış, birlikte yüksel" },
-  profile: { title: "Profil",     subtitle: "Hesabın ve istatistiklerin" },
-  goals:   { title: "Hedeflerim", subtitle: "Günlük ve haftalık hedefler" },
+  home:    { title: "Anasayfa",     subtitle: "Bugün ne keşfedeceğiz?" },
+  tasks:   { title: "Görevler",     subtitle: "Günlük planını yap, XP'yi topla" },
+  topics:  { title: "Dersler",      subtitle: "LGS 8. sınıf müfredatı · 6 ders" },
+  lgs:     { title: "LGS Soruları", subtitle: "Geçmiş yıl sorularını çöz, puanını artır" },
+  tree:    { title: "Merak Ağacı",  subtitle: "Keşfettiğin kavramlar ve bağlantılar" },
+  league:  { title: "Lig",          subtitle: "Altın Lig · Haftalık sıralama" },
+  friends: { title: "Arkadaşlar",   subtitle: "Birlikte çalış, birlikte yüksel" },
+  profile: { title: "Profil",       subtitle: "Hesabın ve istatistiklerin" },
+  goals:   { title: "Hedeflerim",   subtitle: "Günlük ve haftalık hedefler" },
+  takvim:  { title: "Takvim",       subtitle: "Mayıs 2026 · Ders programı ve sınavlar" },
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -134,7 +139,7 @@ function Sidebar({
         <div className="space-y-0.5">
           {[
             { label: "Hedeflerim", Icon: Target,   onClick: () => onChange("goals") },
-            { label: "Takvim",     Icon: Calendar, onClick: () => onChange("tasks") },
+            { label: "Takvim",     Icon: Calendar, onClick: () => onChange("takvim") },
             { label: "Bildirimler",Icon: Bell,     onClick: onOpenNotifications },
           ].map(({ label, Icon, onClick }) => (
             <button
@@ -1357,6 +1362,424 @@ function TreeView({
 }
 
 /* ══════════════════════════════════════════════════════════
+   LGS SORULARI VIEW — tüm sorular, filtrelenebilir, çözülebilir
+   ══════════════════════════════════════════════════════════ */
+
+const SUBJECT_LABELS: Record<string, string> = {
+  matematik: "Matematik",
+  inkilap:   "T.C. İnkılap Tarihi",
+  fen:       "Fen Bilimleri",
+  turkce:    "Türkçe",
+  din:       "Din Kültürü",
+  ingilizce: "İngilizce",
+};
+
+const DIFFICULTY_LABEL: Record<string, string> = { kolay: "Kolay", orta: "Orta", zor: "Zor" };
+const DIFFICULTY_COLOR: Record<string, string> = {
+  kolay: "bg-mint-100 text-mint-500",
+  orta:  "bg-sun-100 text-sun-500",
+  zor:   "bg-coral-100 text-coral-600",
+};
+
+function LgsQuizView() {
+  const score          = useGameStore((s) => s.score);
+  const [filter, setFilter] = useState<string>("all");
+  const [active, setActive] = useState<string | null>(null); // soru id
+  const [solved, setSolved] = useState<Set<string>>(new Set());
+
+  const subjects = ["all", ...Object.keys(SUBJECT_LABELS)];
+
+  const visible = filter === "all"
+    ? LGS_QUESTIONS
+    : LGS_QUESTIONS.filter((q) => q.subject === filter);
+
+  function handleDone(id: string) {
+    setSolved((prev) => new Set([...prev, id]));
+    setActive(null);
+  }
+
+  return (
+    <div className="h-full overflow-y-auto nice-scroll px-6 py-4">
+      <div className="max-w-5xl">
+        {/* Üst özet */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          {[
+            { label: "Toplam Soru",   value: LGS_QUESTIONS.length, color: "text-ink-900" },
+            { label: "Çözülen",       value: score.lgsAnswered,    color: "text-mint-500" },
+            { label: "Doğru Cevap",   value: score.lgsCorrect,     color: "text-brand-600" },
+          ].map((s) => (
+            <div key={s.label} className="bg-white border border-ink-200 rounded-2xl shadow-card p-4 text-center">
+              <div className={`font-display font-bold text-[28px] tabular-nums ${s.color}`}>{s.value}</div>
+              <div className="text-[11.5px] text-ink-500 mt-0.5">{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Ders filtresi */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {subjects.map((s) => (
+            <button
+              key={s}
+              onClick={() => { setFilter(s); setActive(null); }}
+              className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold transition ${
+                filter === s
+                  ? "bg-brand-500 text-white"
+                  : "bg-white border border-ink-200 text-ink-700 hover:border-brand-500"
+              }`}
+            >
+              {s === "all" ? "Tümü" : SUBJECT_LABELS[s]}
+              <span className={`ml-1.5 text-[10px] tabular-nums font-bold px-1.5 py-0.5 rounded-full ${
+                filter === s ? "bg-white/20 text-white" : "bg-ink-100 text-ink-500"
+              }`}>
+                {s === "all" ? LGS_QUESTIONS.length : LGS_QUESTIONS.filter((q) => q.subject === s).length}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Soru listesi */}
+        <div className="space-y-3">
+          {visible.map((q) => {
+            const isSolved  = solved.has(q.id);
+            const isActive  = active === q.id;
+
+            return (
+              <div key={q.id} className={`bg-white border rounded-2xl shadow-card overflow-hidden transition ${
+                isSolved ? "border-mint-300" : "border-ink-200"
+              }`}>
+                {/* Soru başlığı */}
+                <div className="px-5 py-4 flex items-start gap-4">
+                  {/* Yıl + ders badge */}
+                  <div className="shrink-0 text-center mt-0.5">
+                    <div className="font-mono font-bold text-[13px] text-ink-900">{q.year}</div>
+                    <div className="text-[9.5px] text-ink-400 uppercase tracking-wider">{SUBJECT_LABELS[q.subject]?.split(" ")[0]}</div>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-[13.5px] leading-relaxed font-medium ${isSolved ? "text-ink-400" : "text-ink-900"}`}>
+                      {q.question}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10.5px] font-semibold ${DIFFICULTY_COLOR[q.difficulty]}`}>
+                        {DIFFICULTY_LABEL[q.difficulty]}
+                      </span>
+                      <span className="text-[11px] text-ink-400">{q.unit}</span>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0">
+                    {isSolved ? (
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-mint-100 text-mint-500 text-[12px] font-semibold">
+                        ✓ Çözüldü
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setActive(isActive ? null : q.id)}
+                        className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold transition ${
+                          isActive
+                            ? "bg-ink-100 text-ink-700"
+                            : "bg-brand-500 hover:bg-brand-600 text-white"
+                        }`}
+                      >
+                        {isActive ? "Kapat" : "Çöz →"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Soru kartı (açık ise) */}
+                {isActive && !isSolved && (
+                  <div className="px-5 pb-5 border-t border-ink-100 pt-4">
+                    <LgsQuestionCard
+                      question={q}
+                      onDone={() => handleDone(q.id)}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   TAKVİM VIEW — Mayıs 2026 + Ders Programı
+   ══════════════════════════════════════════════════════════ */
+
+// Mayıs 2026: 1 Mayıs = Perşembe (Mon=0 … Sun=6 ⇒ Thu=3)
+const MAY_START_DOW = 3;
+const MAY_DAYS      = 31;
+const TODAY_DAY     = 17; // Bugün: 17 Mayıs 2026 (Cumartesi)
+
+const EXAM_DATES: { day: number; label: string; chip: string }[] = [
+  { day: 5,  label: "Türkçe Sınavı",          chip: "bg-coral-100 text-coral-600 border-coral-500/30" },
+  { day: 8,  label: "Matematik Sınavı",        chip: "bg-coral-100 text-coral-600 border-coral-500/30" },
+  { day: 12, label: "Fen Bilimleri Sınavı",    chip: "bg-coral-100 text-coral-600 border-coral-500/30" },
+  { day: 15, label: "T.C. İnkılap Tarihi Sınavı", chip: "bg-coral-100 text-coral-600 border-coral-500/30" },
+  { day: 20, label: "İngilizce Sınavı",        chip: "bg-coral-100 text-coral-600 border-coral-500/30" },
+  { day: 27, label: "LGS Genel Sınavı",        chip: "bg-coral-600 text-white border-coral-600"        },
+];
+
+const HOLIDAY_DATES: { day: number; label: string }[] = [
+  { day: 1,  label: "İşçi ve Emekçi Bayramı" },
+  { day: 19, label: "Gençlik ve Spor Bayramı" },
+];
+
+const WEEK_DAYS_SHORT = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
+
+// Ders saatleri (40 dk ders, 10 dk teneffüs, 40 dk öğle)
+const PERIODS: { label: string; start: string; end: string; isBreak?: boolean; isLunch?: boolean }[] = [
+  { label: "1. Ders",       start: "09:00", end: "09:40" },
+  { label: "Teneffüs",      start: "09:40", end: "09:50", isBreak: true },
+  { label: "2. Ders",       start: "09:50", end: "10:30" },
+  { label: "Teneffüs",      start: "10:30", end: "10:40", isBreak: true },
+  { label: "3. Ders",       start: "10:40", end: "11:20" },
+  { label: "Teneffüs",      start: "11:20", end: "11:30", isBreak: true },
+  { label: "4. Ders",       start: "11:30", end: "12:10" },
+  { label: "Öğle Tatili",   start: "12:10", end: "12:50", isBreak: true, isLunch: true },
+  { label: "5. Ders",       start: "12:50", end: "13:30" },
+  { label: "Teneffüs",      start: "13:30", end: "13:40", isBreak: true },
+  { label: "6. Ders",       start: "13:40", end: "14:20" },
+  { label: "Teneffüs",      start: "14:20", end: "14:30", isBreak: true },
+  { label: "7. Ders",       start: "14:30", end: "15:10" },
+  { label: "Teneffüs",      start: "15:10", end: "15:20", isBreak: true },
+  { label: "8. Ders",       start: "15:20", end: "16:00" },
+];
+
+// Ders programı — yalnızca 8 ders satırı, break satırları hariç
+// SCHEDULE[dersIndex][günIndex] = ders adı   (günler: Pzt Sal Çar Per Cum)
+const SCHEDULE_DATA: string[][] = [
+  ["Türkçe",             "Matematik",           "Fen Bilimleri",       "İngilizce",           "Türkçe"             ],
+  ["Türkçe",             "Matematik",           "Fen Bilimleri",       "İngilizce",           "Türkçe"             ],
+  ["Matematik",          "T.C. İnkılap",        "Matematik",           "Matematik",           "T.C. İnkılap"       ],
+  ["Matematik",          "T.C. İnkılap",        "Matematik",           "Matematik",           "T.C. İnkılap"       ],
+  ["T.C. İnkılap",       "Fen Bilimleri",       "Türkçe",              "Fen Bilimleri",       "Matematik"          ],
+  ["T.C. İnkılap",       "Fen Bilimleri",       "Türkçe",              "Fen Bilimleri",       "Matematik"          ],
+  ["İngilizce",          "Din Kültürü",         "İngilizce",           "Din Kültürü",         "İngilizce"          ],
+  ["Beden Eğitimi",      "Müzik",               "Rehberlik",           "Beden Eğitimi",       "Teknoloji Tasarım"  ],
+];
+
+const SUBJECT_COLOR: Record<string, string> = {
+  "Türkçe":           "bg-mint-100 text-mint-500",
+  "Matematik":        "bg-sky-100 text-sky-500",
+  "Fen Bilimleri":    "bg-sun-100 text-sun-500",
+  "T.C. İnkılap":     "bg-brand-50 text-brand-700",
+  "İngilizce":        "bg-coral-100 text-coral-600",
+  "Din Kültürü":      "bg-indigo-50 text-indigo-600",
+  "Beden Eğitimi":    "bg-green-50 text-green-600",
+  "Müzik":            "bg-purple-50 text-purple-600",
+  "Rehberlik":        "bg-teal-50 text-teal-600",
+  "Teknoloji Tasarım":"bg-orange-50 text-orange-600",
+};
+
+function TakvimView() {
+  // Build calendar cells
+  const cells: (number | null)[] = [
+    ...Array(MAY_START_DOW).fill(null),
+    ...Array.from({ length: MAY_DAYS }, (_, i) => i + 1),
+  ];
+  // Pad to full weeks
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const examMap = new Map(EXAM_DATES.map((e) => [e.day, e]));
+  const holidayMap = new Map(HOLIDAY_DATES.map((h) => [h.day, h]));
+
+  // Lesson period index tracker
+  let lessonIdx = 0;
+
+  return (
+    <div className="h-full overflow-y-auto nice-scroll px-6 py-4 space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-7xl">
+
+        {/* ── Sol: Takvim ──────────────────────────────────── */}
+        <div className="lg:col-span-1 space-y-4">
+
+          {/* Mayıs 2026 takvimi */}
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card overflow-hidden">
+            <div className="px-5 py-4 border-b border-ink-200 bg-gradient-to-r from-brand-500 to-brand-700">
+              <div className="font-display font-bold text-[17px] text-white tracking-tight">Mayıs 2026</div>
+              <div className="text-[11px] text-white/70 mt-0.5">LGS hazırlık takvimi</div>
+            </div>
+
+            {/* Gün başlıkları */}
+            <div className="grid grid-cols-7 border-b border-ink-200">
+              {WEEK_DAYS_SHORT.map((d) => (
+                <div key={d} className={`py-2 text-center text-[10px] font-bold uppercase tracking-wider ${
+                  d === "Cmt" || d === "Paz" ? "text-ink-400" : "text-ink-500"
+                }`}>
+                  {d}
+                </div>
+              ))}
+            </div>
+
+            {/* Günler */}
+            <div className="grid grid-cols-7">
+              {cells.map((day, i) => {
+                if (!day) return <div key={i} className="aspect-square" />;
+                const exam    = examMap.get(day);
+                const holiday = holidayMap.get(day);
+                const isToday = day === TODAY_DAY;
+                const isWeekend = i % 7 >= 5;
+                return (
+                  <div
+                    key={i}
+                    className={`aspect-square flex flex-col items-center justify-center gap-0.5 border-b border-r border-ink-100 relative ${
+                      isToday  ? "bg-brand-500" :
+                      exam     ? "bg-coral-100" :
+                      holiday  ? "bg-sky-100" :
+                      isWeekend ? "bg-paper" : ""
+                    }`}
+                  >
+                    <span className={`text-[12px] font-semibold tabular-nums ${
+                      isToday   ? "text-white" :
+                      exam      ? "text-coral-600" :
+                      holiday   ? "text-sky-500" :
+                      isWeekend ? "text-ink-400" :
+                      "text-ink-900"
+                    }`}>
+                      {day}
+                    </span>
+                    {exam && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-coral-600 shrink-0" />
+                    )}
+                    {holiday && !exam && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Lejant */}
+            <div className="px-4 py-3 border-t border-ink-100 flex flex-wrap gap-3 text-[10.5px] text-ink-500">
+              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-brand-500 shrink-0" /> Bugün</div>
+              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-coral-600 shrink-0" /> Sınav</div>
+              <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sky-500 shrink-0" /> Tatil</div>
+            </div>
+          </div>
+
+          {/* Sınav listesi */}
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-ink-200">
+              <div className="font-display font-bold text-[14px] text-ink-900 tracking-tight">📋 Mayıs Sınavları</div>
+              <div className="text-[11px] text-ink-500">Öğretmen tarafından eklendi</div>
+            </div>
+            <div className="divide-y divide-ink-100">
+              {EXAM_DATES.map((e) => {
+                const isPast   = e.day < TODAY_DAY;
+                const isToday  = e.day === TODAY_DAY;
+                return (
+                  <div key={e.day} className={`px-5 py-3 flex items-center gap-3 ${isPast ? "opacity-60" : ""}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-display font-bold text-[15px] shrink-0 ${
+                      isToday ? "bg-brand-500 text-white" : "bg-paper border border-ink-200 text-ink-900"
+                    }`}>
+                      {e.day}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-semibold text-[12.5px] ${isToday ? "text-brand-700" : "text-ink-900"}`}>
+                        {e.label}
+                      </div>
+                      <div className="text-[10.5px] text-ink-400 mt-0.5">
+                        {isPast ? "✓ Tamamlandı" : isToday ? "Bugün!" : `${e.day} Mayıs 2026`}
+                      </div>
+                    </div>
+                    {isToday && (
+                      <span className="px-2 py-0.5 rounded-full bg-brand-500 text-white text-[9px] font-bold uppercase tracking-wider">
+                        Bugün
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Sağ: Ders Programı ──────────────────────────── */}
+        <div className="lg:col-span-2">
+          <div className="bg-white border border-ink-200 rounded-2xl shadow-card overflow-hidden">
+            <div className="px-5 py-4 border-b border-ink-200 flex items-center justify-between">
+              <div>
+                <div className="font-display font-bold text-[15px] text-ink-900 tracking-tight">📚 Haftalık Ders Programı</div>
+                <div className="text-[11px] text-ink-500 mt-0.5">8. Sınıf · 09:00–16:00 · 8 ders saati</div>
+              </div>
+              <span className="px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700 text-[10.5px] font-bold">2025–2026</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-[12px]">
+                <thead>
+                  <tr className="bg-paper border-b border-ink-200">
+                    <th className="py-2.5 px-3 text-left font-semibold text-ink-500 w-28 text-[10.5px] uppercase tracking-wider">Saat</th>
+                    {["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"].map((d) => (
+                      <th key={d} className="py-2.5 px-2 text-center font-semibold text-ink-700 text-[11px]">{d}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {PERIODS.map((p, pi) => {
+                    if (p.isBreak) {
+                      return (
+                        <tr key={pi} className={`border-b border-ink-100 ${p.isLunch ? "bg-amber-50" : "bg-paper"}`}>
+                          <td className="py-1.5 px-3">
+                            <div className={`text-[10px] font-semibold ${p.isLunch ? "text-amber-600" : "text-ink-400"}`}>
+                              {p.start}–{p.end}
+                            </div>
+                          </td>
+                          <td colSpan={5} className="py-1.5 px-2 text-center">
+                            <span className={`text-[10.5px] font-semibold ${p.isLunch ? "text-amber-600" : "text-ink-400"}`}>
+                              {p.isLunch ? "🍽 Öğle Tatili (40 dk)" : `☕ ${p.label} (10 dk)`}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    const subjects = SCHEDULE_DATA[lessonIdx];
+                    lessonIdx++;
+
+                    return (
+                      <tr key={pi} className="border-b border-ink-100 hover:bg-paper/60 transition">
+                        <td className="py-2 px-3 align-top">
+                          <div className="font-semibold text-ink-900 text-[11.5px]">{p.label}</div>
+                          <div className="text-[10px] text-ink-400 font-mono mt-0.5">{p.start}–{p.end}</div>
+                        </td>
+                        {subjects.map((subj, di) => {
+                          const color = SUBJECT_COLOR[subj] ?? "bg-ink-100 text-ink-700";
+                          return (
+                            <td key={di} className="py-2 px-2 text-center">
+                              <span className={`inline-block px-2 py-1 rounded-lg text-[10.5px] font-semibold ${color}`}>
+                                {subj}
+                              </span>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Renk lejantı */}
+            <div className="px-5 py-3 border-t border-ink-100 flex flex-wrap gap-2">
+              {Object.entries(SUBJECT_COLOR).map(([subj, color]) => (
+                <span key={subj} className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${color}`}>
+                  {subj}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
    DASHBOARD SHELL
    ══════════════════════════════════════════════════════════ */
 export default function ChatPage() {
@@ -1457,8 +1880,10 @@ export default function ChatPage() {
               onNodeClick={(msg) => setExternalMessage(msg)}
             />
           )}
+          {page === "lgs"     && <LgsQuizView />}
           {page === "league"  && <LeagueView onStartQuickLgs={handleStartQuickLgs} />}
           {page === "goals"   && <GoalsView />}
+          {page === "takvim"  && <TakvimView />}
           {page === "friends" && <FriendsView />}
           {page === "profile" && <ProfileView user={user} charInfo={charInfo} />}
         </div>
