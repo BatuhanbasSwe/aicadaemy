@@ -306,6 +306,25 @@ export const useGameStore = create<GameState>()(
           studiedUnitIds: [],
         }),
     }),
-    { name: 'lgs-kasifi-store' },
+    {
+      name: 'lgs-kasifi-store',
+      // Remove orphan roots (duplicate roots from old bug) on every load
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        const nodes = state.tree.nodes;
+        const roots = nodes.filter(n => n.parentId === null);
+        if (roots.length <= 1) return;
+        // Keep only nodes reachable from the first root
+        const firstRoot = roots[0];
+        const reachable = new Set<string>();
+        const queue = [firstRoot.id];
+        while (queue.length > 0) {
+          const id = queue.shift()!;
+          reachable.add(id);
+          nodes.filter(n => n.parentId === id).forEach(n => queue.push(n.id));
+        }
+        state.tree = { nodes: nodes.filter(n => reachable.has(n.id)) };
+      },
+    },
   ),
 );
