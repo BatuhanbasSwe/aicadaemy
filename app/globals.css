@@ -79,3 +79,18 @@ html, body {
   background-image: radial-gradient(circle, rgba(15,17,21,0.08) 1px, transparent 1.2px);
   background-size: 16px 16px;
 }
+
+/* ── Topic Markdown renderer (KaTeX + prose) ─────────────── */
+.topic-md { font-size: 12.5px; color: #2A2F3A; line-height: 1.6; }
+.topic-md p { margin: 0.35rem 0; }
+.topic-md p:first-child { margin-top: 0; }
+.topic-md ul, .topic-md ol { padding-left: 1.1rem; margin: 0.3rem 0; }
+.topic-md li { margin: 0.1rem 0; }
+.topic-md strong { color: #16181F; font-weight: 600; }
+.topic-md blockquote { border-left: 2px solid #D1D5DB; padding-left: 0.6rem; margin: 0.4rem 0; color: #6B7280; }
+.topic-md h3 { font-size: 0.8rem; font-weight: 700; color: #16181F; margin: 0.5rem 0 0.15rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.topic-md table { font-size: 0.72rem; border-collapse: collapse; width: 100%; margin: 0.5rem 0; }
+.topic-md th, .topic-md td { border: 1px solid #E7E3DA; padding: 0.2rem 0.45rem; text-align: left; }
+.topic-md th { background: #EFECE4; font-weight: 600; color: #16181F; }
+.topic-md .katex { font-size: 0.95em; }
+.topic-md .katex-display { margin: 0.5rem 0; overflow-x: auto; }

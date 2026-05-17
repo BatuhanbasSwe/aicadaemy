@@ -4,6 +4,7 @@ import { ArrowRight, ArrowLeft, BookOpen, ChevronRight } from "lucide-react";
 import type { CharacterId } from "@/lib/types";
 import { MUFREDAT, type MufredatSubject, type MufredatUnit } from "@/lib/content/mufredat";
 import { useGameStore } from "@/lib/store/useGameStore";
+import TopicMarkdown from "@/components/TopicMarkdown";
 
 const GUIDE_NAME: Record<CharacterId, string> = {
   ataturk:     "Mustafa Kemal Atatürk",
@@ -227,7 +228,7 @@ function UnitDetail({
                 {topic.title}
               </h4>
             </div>
-            <p className="text-[12.5px] text-ink-600 leading-relaxed">{topic.explanation}</p>
+            <TopicMarkdown content={topic.explanation} />
           </div>
         ))}
       </div>
