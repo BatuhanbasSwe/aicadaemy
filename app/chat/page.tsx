@@ -54,11 +54,10 @@ const CHAR_META: Record<CharacterId, { name: string; subject: string }> = {
 type PageId = "home" | "tasks" | "topics" | "tree" | "league" | "friends" | "profile" | "goals" | "takvim" | "lgs";
 
 const NAV: { id: PageId; label: string; Icon: React.ElementType; badge?: number }[] = [
-  { id: "home",    label: "Anasayfa",     Icon: Home },
+  { id: "tree",    label: "Anasayfa",     Icon: Network },
   { id: "tasks",   label: "Görevler",     Icon: ListChecks },
   { id: "topics",  label: "Dersler",      Icon: BookOpen },
   { id: "lgs",     label: "LGS Soruları", Icon: FileQuestion },
-  { id: "tree",    label: "Merak Ağacı",  Icon: Network },
   { id: "league",  label: "Lig",          Icon: Trophy },
   { id: "friends", label: "Arkadaşlar",   Icon: Users, badge: 2 },
   { id: "profile", label: "Profil",       Icon: User },
@@ -69,7 +68,7 @@ const PAGE_META: Record<PageId, { title: string; subtitle: string }> = {
   tasks:   { title: "Görevler",     subtitle: "Günlük planını yap, XP'yi topla" },
   topics:  { title: "Dersler",      subtitle: "LGS 8. sınıf müfredatı · 6 ders" },
   lgs:     { title: "LGS Soruları", subtitle: "Geçmiş yıl sorularını çöz, puanını artır" },
-  tree:    { title: "Merak Ağacı",  subtitle: "Keşfettiğin kavramlar ve bağlantılar" },
+  tree:    { title: "Anasayfa",     subtitle: "Merak ağacın ve sohbet" },
   league:  { title: "Lig",          subtitle: "Altın Lig · Haftalık sıralama" },
   friends: { title: "Arkadaşlar",   subtitle: "Birlikte çalış, birlikte yüksel" },
   profile: { title: "Profil",       subtitle: "Hesabın ve istatistiklerin" },
@@ -1795,7 +1794,7 @@ export default function ChatPage() {
   const resetConversation = useGameStore((s) => s.resetConversation);
   const treeNodes         = useGameStore((s) => s.tree.nodes);
 
-  const [page, setPage] = useState<PageId>("home");
+  const [page, setPage] = useState<PageId>("tree");
   const [externalMessage, setExternalMessage] = useState<string | null>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [chatKey, setChatKey] = useState(0);
@@ -1834,13 +1833,13 @@ export default function ChatPage() {
     setCharacter(nextCharacterId);
     setChatKey((k) => k + 1); // ChatCard remount → rootInitialised ref sıfırlanır
     setExternalMessage(`Merhaba, "${nextUnit}" konusuna geçmek istiyorum. Beni biraz hazırlar mısın?`);
-    setPage("home");
+    setPage("tree");
   };
 
   /** Lig > "Hızlı soru çözmeye başla" → ChatCard'a "bana bir LGS sorusu sor" mesajı */
   const handleStartQuickLgs = () => {
     setExternalMessage("Hızlı bir LGS sorusu çözmek istiyorum, bana bir tane sorar mısın?");
-    setPage("home");
+    setPage("tree");
   };
 
   return (
@@ -1853,7 +1852,7 @@ export default function ChatPage() {
           onOpenNotifications={() => setNotificationsOpen(true)}
           treeNodes={treeNodes}
           treeCharId={selectedCharacter}
-          onTreeNodeClick={(msg) => { setExternalMessage(msg); setPage("home"); }}
+          onTreeNodeClick={(msg) => { setExternalMessage(msg); setPage("tree"); }}
           onOpenTreeFullscreen={() => setPage("tree")}
         />
       </div>
