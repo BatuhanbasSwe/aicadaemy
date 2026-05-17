@@ -4,12 +4,14 @@ export interface MufredatTopic {
   id: string;
   title: string;
   explanation: string;
+  sampleQs?: string[];
 }
 
 export interface MufredatUnit {
   id: string;
   title: string;
   topics: MufredatTopic[];
+  questions?: string[];
 }
 
 export interface MufredatSubject {
@@ -32,6 +34,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "turkce-1",
         title: "1. Tema: Erdemler",
+        questions: [
+          "\"Tuzağa Düşen Ceylan\" adlı hikâyenin ana teması nedir?",
+          "\"Forsa\" metninde yazar okuyucuya hangi duyguyu vermek istemektedir?",
+          "\"Sevmek\" sözcüğünün çok anlamlılığına bir örnek cümle yaz.",
+          "Anlatıcı bakış açısı ile kahraman bakış açısı arasındaki fark nedir?",
+          "Eş anlamlı, zıt anlamlı ve çok anlamlı sözcük kavramlarını örnekle açıkla.",
+          "Bir hikâyenin yapısını oluşturan unsurlar (serim, düğüm, çözüm) nelerdir?",
+          "\"Dostluğun Değeri\" dinleme metninin ana düşüncesini bir cümleyle yaz.",
+          "\"Anadolu'da Tuzun da Bir Sözü Var\" metninde \"tuz\" neyi sembolize etmektedir?",
+          "Mecaz anlam ile gerçek anlam arasındaki farkı örnekle açıkla.",
+          "Arkadaşlık ve yardımlaşma temalarını bir arada işleyen bir metin türü hangisidir?",
+        ],
         topics: [
           {
             id: "turkce-1-1",
@@ -68,6 +82,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "turkce-2",
         title: "2. Tema: Doğa ve Evren",
+        questions: [
+          "\"Kızıl Renkli Komşumuz\" metninde Mars gezegeni nasıl kişileştirilmiştir?",
+          "Sonbaharı anlatan bir şiirde kullanılabilecek iki edebi sanatı örnekle açıkla.",
+          "Betimleyici metinlerde hangi tür sıfatlar ön plana çıkar?",
+          "Bilim kurgu metni ile gerçek bilgi metni arasındaki farkı açıkla.",
+          "\"Beyaz Diş\" romanından alınan bölümde anlatıcının bakış açısı nasıldır?",
+          "Nesli tükenen canlıları konu alan bir metinde yazarın amacı ne olabilir?",
+          "Kişileştirme (teşhis) sanatını örnekle tanımla.",
+          "\"Son Kuşlar\" dinleme metninin konusu ve ana düşüncesi nedir?",
+          "Doğa betimlemelerinde sıkça kullanılan duyusal ifadeler hangileridir?",
+          "Bir metinde neden-sonuç ilişkisi nasıl kurulur? Örnek ver.",
+        ],
         topics: [
           {
             id: "turkce-2-1",
@@ -104,6 +130,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "turkce-3",
         title: "3. Tema: Millî Kültürümüz",
+        questions: [
+          "Ergenekon Destanı'nın temel mesajı nedir?",
+          "\"Türkiyem\" şiirinde hangi edebi sanatlar kullanılmıştır?",
+          "Nasrettin Hoca fıkralarının en belirgin özelliği nedir?",
+          "Atasözü ile deyim arasındaki farkı örnekle açıkla.",
+          "\"Türk Plastik Sanatları\" metni hangi metin türündedir? Nasıl anlaşılır?",
+          "Sözlü edebiyat ile yazılı edebiyat arasındaki fark nedir?",
+          "Destanlarda olağanüstü unsurlar neden yer alır?",
+          "Bir atasözü seç ve günlük hayattan buna uygun bir örnek ver.",
+          "Anadolu el sanatlarından üç örnek ver ve kültürel önemlerini açıkla.",
+          "Millî kimlik oluşturmada dil ve edebiyatın rolü nedir?",
+        ],
         topics: [
           {
             id: "turkce-3-1",
@@ -140,6 +178,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "turkce-4",
         title: "4. Tema: Millî Mücadele ve Atatürk",
+        questions: [
+          "\"Şu Sonsuz Koşu\" şiirinde \"koşu\" metaforu neyi temsil etmektedir?",
+          "İstiklâl Marşı'nın yazarı kimdir ve hangi koşullarda yazılmıştır?",
+          "Açıklayıcı metin ile betimleyici metin arasındaki fark nedir?",
+          "\"Mustafa Kemal'in Kağnısı\" metninde kağnı imgesi neyi simgelemektedir?",
+          "Atatürk'ün eğitim alanındaki en önemli reformu hangisidir?",
+          "Millî Mücadele'yi konu alan metinlerde sıkça işlenen değerler nelerdir?",
+          "Şiirde ritim ve uyak nedir? Birer örnekle açıkla.",
+          "\"Duatepe\" metninde anlatıcının duygu durumunu nasıl tanımlarsın?",
+          "Coşku ve kararlılık duygularını anlatan metinlerde hangi anlatım biçimleri tercih edilir?",
+          "Halkın Millî Mücadele'ye katkısını anlatan bir cümle yaz.",
+        ],
         topics: [
           {
             id: "turkce-4-1",
@@ -176,6 +226,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "turkce-5",
         title: "5. Tema: Vatandaşlık",
+        questions: [
+          "\"Bebeklerin Ulusu Yok\" metninin türü nedir ve amacı nedir?",
+          "İkna edici metinde yazar görüşünü nasıl destekler?",
+          "\"Kurtla Köpek\" masalında kurt ve köpek neyi sembolize eder?",
+          "Bireysel sorumluluk ile toplumsal sorumluluk arasındaki fark nedir?",
+          "Tartışmacı metinde karşı görüşe atıf yapmanın amacı nedir?",
+          "Evrensel insan hakları nelerdir? Üç örnek ver.",
+          "\"Selim'i Anarım\" metninde anlatıcının bakış açısı nasıldır?",
+          "\"Çömlekçi Baba\" hikâyesinde emeğin değeri nasıl işlenmiştir?",
+          "Öznel yargı ile nesnel yargı arasındaki farkı örnekle açıkla.",
+          "Bir vatandaşın temel hak ve ödevlerinden ikişer örnek ver.",
+        ],
         topics: [
           {
             id: "turkce-5-1",
@@ -212,6 +274,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "turkce-6",
         title: "6. Tema: Sağlık ve Spor",
+        questions: [
+          "\"Kahvaltının Önemi\" metninin türü hangisidir? Nasıl anlaşılır?",
+          "Nesnel anlatım ile öznel anlatım arasındaki farkı örnekle açıkla.",
+          "Bilgi metinlerinde neden-sonuç ilişkisi nasıl kurulur?",
+          "\"Güreş\" metninde Türk güreşine ilişkin hangi tarihsel bilgiler verilmektedir?",
+          "Masal türünün gerçekçi ve olağanüstü özelliklerini karşılaştır.",
+          "Obeziteyle mücadelede metinde önerilen altı yoldan ikisini yaz.",
+          "Sağlık metinlerinde istatistik verilerinin kullanılma amacı nedir?",
+          "\"Hastahane\" metninde anlatıcı taraflı mı tarafsız mı? Nasıl anlarsın?",
+          "Bağlamdan yola çıkarak bir sözcüğün anlamını tespit etmek neden önemlidir?",
+          "Spor ile sağlık arasındaki ilişkiyi iki cümleyle açıkla.",
+        ],
         topics: [
           {
             id: "turkce-6-1",
@@ -248,6 +322,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "turkce-7",
         title: "7. Tema: Sanat",
+        questions: [
+          "\"Ressam İçin Zili Çalın\" metninin teması nedir?",
+          "Gezi yazısında anlatıcı hangi rolü üstlenir?",
+          "Ziya Gökalp'in \"San'at\" şiirinde sanat ile millet kavramları nasıl ilişkilendirilmiştir?",
+          "Dolaylı anlatım ile açık anlatım arasındaki fark nedir?",
+          "Lirik şiir ile epik şiir arasındaki fark nedir?",
+          "Bir sanatçının hayatını anlatan metin hangi türdür?",
+          "İkna edici bir metinde kullanılan üç ikna yöntemi nedir?",
+          "Anadolu el sanatlarından bir örnek seç ve kültürel önemini açıkla.",
+          "\"Bir Kış Öyküsü\"nde kış imgesi hangi duygusal anlamı taşımaktadır?",
+          "Sanat eserinin topluma katkısını üç cümleyle açıkla.",
+        ],
         topics: [
           {
             id: "turkce-7-1",
@@ -284,6 +370,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "turkce-8",
         title: "8. Tema: Bilim ve Teknoloji",
+        questions: [
+          "\"Robotlar\" metninde nesnel anlatımı gösteren iki özelliği yaz.",
+          "Bilimsel düşüncenin temel özellikleri nelerdir?",
+          "Harezmî'nin algoritmayı bulmasının tarihe katkısı nedir?",
+          "\"Pastör'ün Savaşı\" metninde biyografi ve bilgi metni özellikleri nasıl iç içedir?",
+          "Sosyal medya bağımlılığı metninde yazarın görüşü nedir?",
+          "Kanıta dayalı metin ile kişisel gözleme dayalı metin arasındaki fark nedir?",
+          "Bilimsel terimlerin metin içindeki anlamı ile sözlük anlamı farklı olabilir mi? Örnek ver.",
+          "Teknolojinin insan ilişkilerine olumlu ve olumsuz etkilerini karşılaştır.",
+          "\"Akıl Aydınlığında\" metninin ana düşüncesi bir cümleyle nedir?",
+          "Paragrafta ana fikir ile yardımcı fikirler nasıl ayrıştırılır?",
+        ],
         topics: [
           {
             id: "turkce-8-1",
@@ -329,6 +427,20 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "mat-1",
         title: "1. Ünite: Çarpanlar, Katlar ve Üslü İfadeler",
+        questions: [
+          "24 sayısının tüm bölenlerini yaz.",
+          "48 ve 72'nin EBOB'unu asal çarpanlara ayırarak bul.",
+          "4 ve 6'nın EKOK'unu bul.",
+          "2³ × 2⁴ işleminin sonucu kaçtır?",
+          "(3²)³ işleminin sonucu kaçtır?",
+          "3⁶ ÷ 3² işleminin sonucu kaçtır?",
+          "2⁻³ değeri kaçtır? (Kesir olarak yaz.)",
+          "0,000072 sayısını bilimsel gösterimle yaz.",
+          "3,6 × 10⁴ sayısının normal yazılışı nedir?",
+          "Aralarında asal iki sayının EBOB'u kaçtır?",
+          "5⁰ + 5¹ değeri kaçtır?",
+          "(-2)⁴ işleminin sonucu pozitif mi negatif mi? Neden?",
+        ],
         topics: [
           {
             id: "mat-1-1",
@@ -344,15 +456,60 @@ export const MUFREDAT: MufredatSubject[] = [
           },
           {
             id: "mat-1-3",
-            title: "Üslü İfadelerde Temel Kurallar",
+            title: "Üslü İfadeler",
             explanation:
-              "Aynı tabanlı üslü ifadeler çarpılırken üsler toplanır, bölünürken çıkarılır; üs üsse gelindiğinde ise üsler çarpılır. Negatif üs, tabanın tersinin pozitif üste yükseltilmesi anlamına gelir ve sıfır üs her zaman 1'e eşittir. Bu kuralları ezberlemek yerine anlamlarını kavramak LGS'de farklı biçimlerde karşına çıkan soruları çözmeyi sağlar.",
+              `Üslü ifade: **taban** kaç kez çarpılacak, **üs** bunu söyler. $a^n$ demek $n$ tane $a$'nın çarpımıdır.
+
+**Örnek:** $3^4 = 3 \\times 3 \\times 3 \\times 3 = 81$
+
+### Temel Kurallar
+
+| Kural | Formül | Örnek |
+|---|---|---|
+| Çarpma | $a^m \\cdot a^n = a^{m+n}$ | $2^3 \\cdot 2^5 = 2^8$ |
+| Bölme | $a^m \\div a^n = a^{m-n}$ | $2^8 \\div 2^3 = 2^5$ |
+| Üs üsse | $(a^m)^n = a^{m \\cdot n}$ | $(2^3)^4 = 2^{12}$ |
+| Sıfır üs | $a^0 = 1$ | $7^0 = 1$ |
+| Negatif üs | $a^{-n} = \\dfrac{1}{a^n}$ | $2^{-3} = \\dfrac{1}{8}$ |
+
+**Negatif taban:** çift üs → pozitif, tek üs → negatif.
+$(-2)^2 = +4$ &nbsp; $(-2)^3 = -8$`,
+            sampleQs: [
+              "2³ × 2⁴ işleminin sonucu kaçtır?",
+              "(3²)³ işleminin sonucu kaçtır?",
+              "5⁰ + 5¹ değeri kaçtır?",
+              "3⁶ ÷ 3² işleminin sonucu kaçtır?",
+              "2⁻³ değeri kaçtır? (Kesir olarak yaz.)",
+              "(−2)⁴ işleminin sonucu pozitif mi negatif mi? Neden?",
+              "4⁰ × 4³ × 4⁻² işleminin sonucu kaçtır?",
+              "a² × a³ × a⁻¹ ifadesini tek üslü olarak yaz.",
+              "Bir sayının 0. kuvvetinin her zaman 1 olması için ne şartı gereklidir?",
+              "2¹⁰ kaç eder? (En az 3 farklı yoldan hesapla.)",
+            ],
           },
           {
             id: "mat-1-4",
             title: "Bilimsel Gösterim",
             explanation:
-              "Çok büyük ya da çok küçük sayıları 1 ile 10 arasında bir sayı ile 10'un kuvvetinin çarpımı şeklinde yazmaya bilimsel gösterim denir. Örneğin 0,000045 sayısı 4,5 × 10⁻⁵ biçiminde gösterilir; bu astronomide ve kimyada çok kullanılır. Ondalık noktanın kaç basamak kaydırıldığına bakarak üssü hızla belirleyebilirsin.",
+              `Çok büyük/küçük sayıları $a \\times 10^n$ biçiminde yazarız; burada $1 \\le a < 10$.
+
+**Büyük sayı → sağa kaydır:** $4\\,500\\,000 = 4{,}5 \\times 10^6$ *(virgül 6 basamak sola gitti)*
+
+**Küçük sayı → sola kaydır:** $0{,}000045 = 4{,}5 \\times 10^{-5}$ *(virgül 5 basamak sağa gitti)*
+
+### İpucu
+- Üs **pozitif** → sayı 1'den **büyük**
+- Üs **negatif** → sayı 1'den **küçük**
+- Bilimsel gösterimdeki sayıları çarpmak: üsleri topla, $a$ kısmını ayrıca çarp.`,
+            sampleQs: [
+              "0,00072 sayısını bilimsel gösterimle yaz.",
+              "3,6 × 10⁴ sayısının normal yazılışı nedir?",
+              "4 × 10³ + 6 × 10² toplamı kaçtır?",
+              "Güneş ile Dünya arasındaki mesafe yaklaşık 1,5 × 10⁸ km'dir. Bu kaç km eder?",
+              "2,5 × 10³ ile 4 × 10² çarpımı bilimsel gösterimle kaçtır?",
+              "0,000 000 45 sayısını bilimsel gösterimle yaz.",
+              "6 × 10⁻⁴ sayısının normal yazılışı nedir?",
+            ],
           },
           {
             id: "mat-1-5",
@@ -365,18 +522,72 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "mat-2",
         title: "2. Ünite: Kareköklü İfadeler ve Veri Analizi",
+        questions: [
+          "√144 kaçtır?",
+          "√50 hangi iki ardışık tam sayı arasındadır?",
+          "√75 ifadesini en basit biçimde yaz.",
+          "√3 · √12 çarpımı kaçtır?",
+          "3√5 + 2√5 toplamı kaçtır?",
+          "√18 − √8 farkı kaçtır?",
+          "5 öğrencinin notu: 70, 85, 90, 75, 80. Ortalaması kaçtır?",
+          "Aynı verilerin ortancası (medyan) kaçtır?",
+          "Çizgi grafiğinde yatay eksen zamanı gösteriyorsa ne anlam taşır?",
+          "√12 + √27 toplamı kaçtır?",
+          "Alanı 50 cm² olan karenin bir kenarı yaklaşık kaç cm'dir?",
+        ],
         topics: [
           {
             id: "mat-2-1",
             title: "Tam Kare Sayılar ve Karekök",
             explanation:
-              "Bir doğal sayının tam karekökü bulunabiliyorsa o sayı tam karedir; örneğin 36'nın karekökü 6'dır. Tam kare olmayan sayıların karekökleri ondalık ya da irrasyonel sayı olduğundan iki tam sayı arasındaki aralığı tespit etmek gerekir. LGS'de √50'nin 7 ile 8 arasında olduğunu görmek bu aralık bilgisinden gelir.",
+              `$\\sqrt{a}$ demek "karesini alınca $a$ veren sayı" demektir. $n^2 = a$ ise $\\sqrt{a} = n$.
+
+**Önemli tam kareler:**
+
+$$1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144 \\ldots$$
+
+**Tam kare olmayan sayılar için aralık:**
+
+$\\sqrt{50}$ → $7^2=49$ ve $8^2=64$ olduğundan $7 < \\sqrt{50} < 8$
+
+**LGS ipucu:** $\\sqrt{50} = \\sqrt{25 \\cdot 2} = 5\\sqrt{2}$ şeklinde sadeleştirebilirsin.`,
+            sampleQs: [
+              "√144 kaçtır?",
+              "√50 hangi iki ardışık tam sayı arasındadır?",
+              "√75 ifadesini kök dışına çıkararak en basit biçimde yaz.",
+              "√200 = kaç√2'dir?",
+              "√(9/16) kaçtır?",
+              "Alanı 48 cm² olan kare bahçenin bir kenarı kaç cm'dir? (Tam sayı olmayabilir.)",
+              "√3 ile √4 arasında kaç tam sayı vardır?",
+            ],
           },
           {
             id: "mat-2-2",
             title: "Kareköklü İfadelerde İşlemler",
             explanation:
-              "Kareköklü ifadeleri çarparken köklerin altındaki sayılar çarpılır; bölmede ise bölünür. Toplama ve çıkarma yapabilmek için kök içleri aynı olmak zorundadır; farklı kök içlerini birleştirmeye çalışmak hataya yol açar. Katsayıyı kök içine almak (ya da tersini yapmak) soruların temel bileşenlerinden biridir.",
+              `### Çarpma ve Bölme
+$$\\sqrt{a} \\cdot \\sqrt{b} = \\sqrt{a \\cdot b} \\qquad \\dfrac{\\sqrt{a}}{\\sqrt{b}} = \\sqrt{\\dfrac{a}{b}}$$
+
+**Örnek:** $\\sqrt{3} \\cdot \\sqrt{12} = \\sqrt{36} = 6$
+
+### Toplama ve Çıkarma
+Kök içleri **aynıysa** katsayılar toplanır:
+$$3\\sqrt{5} + 2\\sqrt{5} = 5\\sqrt{5}$$
+Farklı kök içleri **birleştirilemez:** $\\sqrt{3} + \\sqrt{5} \\ne \\sqrt{8}$ ⚠️
+
+### Katsayıyı İçeri/Dışarı Alma
+$$5\\sqrt{2} = \\sqrt{25 \\cdot 2} = \\sqrt{50} \\qquad \\sqrt{75} = \\sqrt{25 \\cdot 3} = 5\\sqrt{3}$$`,
+            sampleQs: [
+              "√3 · √12 çarpımı kaçtır?",
+              "3√5 + 2√5 toplamı kaçtır?",
+              "√18 − √8 farkı kaçtır? (İpucu: önce sadeleştir.)",
+              "5√2 ifadesini tek kök altında yaz.",
+              "√3 + √5 = √8 midir? Doğru mu yanlış mı? Açıkla.",
+              "2√3 · 3√3 çarpımı kaçtır?",
+              "(√5 + √2)(√5 − √2) çarpımı kaçtır?",
+              "√12 + √27 toplamı kaçtır?",
+              "√72 / √2 bölümü kaçtır?",
+            ],
           },
           {
             id: "mat-2-3",
@@ -401,12 +612,48 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "mat-3",
         title: "3. Ünite: Olasılık ve Cebirsel Özdeşlikler",
+        questions: [
+          "Torbada 3 kırmızı, 7 mavi top var. Mavi çekme olasılığı nedir?",
+          "Bir zarı atıldığında 5'ten büyük gelme olasılığı nedir?",
+          "10 bilettan 2'si kazanan; bir bilet alan kazanma olasılığı nedir?",
+          "(x + 5)² açılımı nedir?",
+          "(2a − 3b)² ifadesini genişlet.",
+          "(x + 4)(x − 4) çarpımı nedir?",
+          "x² − 25 ifadesini çarpanlarına ayır.",
+          "101² değerini özdeşlik kullanarak hesapla.",
+          "99 × 101 çarpımını özdeşlik kullanarak hesapla.",
+          "x + 1/x = 5 ise x² + 1/x² değeri kaçtır?",
+          "x² + 10x + 25 ifadesini tam kare olarak yaz.",
+        ],
         topics: [
           {
             id: "mat-3-1",
             title: "Basit Olayların Olasılığı",
             explanation:
-              "Bir olayın olasılığı, o olayın kaç şekilde gerçekleşebileceğinin toplam olası sonuç sayısına bölünmesiyle bulunur. Olasılık her zaman 0 ile 1 (ya da % 0 ile % 100) arasında yer alır; imkânsız olay 0, kesin olay 1 olasılığa sahiptir. Zar, para ve top gibi somut örneklerle pratik yapmak kavramı pekiştirir.",
+              `$$P(A) = \\dfrac{\\text{A'nın gerçekleşme sayısı}}{\\text{Toplam eşit olası sonuç sayısı}}$$
+
+**Sınırlar:** $0 \\le P(A) \\le 1$ — imkânsız olay $= 0$, kesin olay $= 1$.
+
+### Örnek — Torbadan Top Çekme
+Torbada 3 kırmızı, 4 mavi, 5 yeşil top var (toplam 12).
+
+$$P(\\text{mavi veya yeşil}) = \\dfrac{4+5}{12} = \\dfrac{9}{12} = \\dfrac{3}{4}$$
+
+### LGS İpuçları
+- Olasılık hiçbir zaman 1'den büyük olamaz.
+- "En az bir" soruları için: $P(\\text{en az 1}) = 1 - P(\\text{hiç çıkmaz})$`,
+            sampleQs: [
+              "Torbada 3 kırmızı, 7 mavi top var. Rastgele çekilen topun mavi olma olasılığı nedir?",
+              "1'den 20'ye kadar tam sayılardan birini rastgele seçiyoruz. Çift sayı seçme olasılığı nedir?",
+              "Bir zarı atıyoruz. 5'ten büyük gelme olasılığı nedir?",
+              "Bir para atılıyor. Art arda 2 kez yazı gelme olasılığı nedir?",
+              "Torbada 5 kırmızı, 3 yeşil, 2 sarı top var. En az 1 kırmızı çekme olasılığı nedir?",
+              "Olasılığı 0 olan bir olay için gerçek hayattan örnek ver.",
+              "Olasılığı 1 olan bir olay için gerçek hayattan örnek ver.",
+              "Bir sınıfta 15 kız ve 10 erkek öğrenci var. Rastgele seçilen bir öğrencinin kız olma olasılığı nedir?",
+              "Bir zarı atıldığında 3'ten küçük gelme olasılığı nedir?",
+              "10 bilet arasında 2 kazanan bilet var. Bir bilet alırsam kazanma olasılığım nedir?",
+            ],
           },
           {
             id: "mat-3-2",
@@ -418,7 +665,33 @@ export const MUFREDAT: MufredatSubject[] = [
             id: "mat-3-3",
             title: "Özdeşlikler",
             explanation:
-              "Temel cebirsel özdeşlikler (a+b)², (a−b)² ve (a+b)(a−b) formüllerini içerir; bu formüller her a ve b değeri için geçerlidir. Özdeşlikleri tanımak karmaşık çarpma işlemlerini hızlandırır ve ifadeleri sadeleştirmeye yarar. LGS'de özdeşliklerin ters yönde (çarpanlar bulma) kullanımı da sıkça sorulur.",
+              `### Üç Temel Özdeşlik
+
+$$\\boxed{(a+b)^2 = a^2 + 2ab + b^2}$$
+
+$$\\boxed{(a-b)^2 = a^2 - 2ab + b^2}$$
+
+$$\\boxed{(a+b)(a-b) = a^2 - b^2}$$
+
+### Hızlı Hesap Örneği
+$101^2 = (100+1)^2 = 10000 + 200 + 1 = 10201$ ✓
+
+### Ters Yön — Çarpanlara Ayırma
+$$x^2 - 9 = (x+3)(x-3) \\\\ x^2 + 6x + 9 = (x+3)^2$$
+
+**LGS sınavında** özdeşliğin hangi yönde kullanıldığına dikkat et: bazen açmak, bazen çarpmak istenir.`,
+            sampleQs: [
+              "(x + 5)² açılımı nedir?",
+              "(2a − 3b)² ifadesini genişlet.",
+              "(x + 4)(x − 4) çarpımı nedir?",
+              "x² − 16 ifadesini çarpanlarına ayır.",
+              "(a + b)² − (a − b)² ifadesini sadeleştir.",
+              "x + (1/x) = 3 ise x² + (1/x²) değeri kaçtır?",
+              "101² değerini özdeşlik kullanarak hızlıca hesapla.",
+              "99 × 101 çarpımını özdeşlik kullanarak hesapla.",
+              "x² + 10x + 25 ifadesini tam kare olarak yaz.",
+              "4a² − 9b² ifadesini çarpanlarına ayır.",
+            ],
           },
           {
             id: "mat-3-4",
@@ -431,6 +704,19 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "mat-4",
         title: "4. Ünite: Doğrusal Denklemler ve Eşitsizlikler",
+        questions: [
+          "3x + 7 = 22 denklemini çöz.",
+          "x/2 − 3 = 5 denklemini çöz.",
+          "y = 2x + 3 doğrusunun eğimi ve y-kesim noktası nedir?",
+          "(0, 2) ve (4, 10) noktalarından geçen doğrunun eğimi kaçtır?",
+          "2x − 5 > 3 eşitsizliğini çöz.",
+          "x + 3 < 2x − 1 eşitsizliğinin çözüm kümesini bul.",
+          "y = 3x + 1 ve y = 3x − 4 doğruları birbirini keser mi? Açıkla.",
+          "x = 3 olduğunda y = 4x − 2 doğrusunda y değeri kaçtır?",
+          "Eğimi negatif olan doğru hangi yönde gider?",
+          "Bir öğrenci 5 sınavdan 350 puan almıştır. Ortalaması kaçtır?",
+          "Eşitsizliği negatif sayıyla çarparken işaret neden ters çevrilir?",
+        ],
         topics: [
           {
             id: "mat-4-1",
@@ -448,7 +734,31 @@ export const MUFREDAT: MufredatSubject[] = [
             id: "mat-4-3",
             title: "Doğrusal Denklemlerin Grafiği ve Eğim",
             explanation:
-              "y = mx + b biçimindeki denklemde m eğimi (doğrunun dikliğini) b ise y-kesim noktasını verir. Eğim, doğruda x 1 birim artarken y'nin ne kadar değiştiğini gösterir; pozitif eğim artış, negatif eğim azalış anlamına gelir. İki grafik arasında daha dik olan eğimin mutlak değeri büyük olan grafiğe aittir.",
+              `Doğrusal denklemin genel biçimi: $y = mx + b$
+
+| Sembol | Anlamı |
+|---|---|
+| $m$ | **Eğim** — $x$ 1 birim artarken $y$ kaç birim değişir |
+| $b$ | **y-kesim noktası** — doğrunun $y$ eksenini kestiği yer |
+
+$$m = \\dfrac{y_2 - y_1}{x_2 - x_1}$$
+
+**Eğim yorumu:**
+- $m > 0$ → doğru **artan** (soldan sağa yukarı gider)
+- $m < 0$ → doğru **azalan**
+- $m = 0$ → **yatay** doğru
+
+**Örnek:** $y = 2x + 3$ → eğim 2, $y$-kesim 3.
+$x=0$'da $y=3$; $x=1$'de $y=5$ (2 birim arttı).`,
+            sampleQs: [
+              "y = 3x − 5 doğrusunun eğimi ve y-kesim noktası nedir?",
+              "(0, 2) ve (3, 8) noktalarından geçen doğrunun eğimi kaçtır?",
+              "y = −2x + 4 doğrusu artan mı azalan mı?",
+              "Eğimi 0 olan bir doğru nasıl görünür? Örnek denklem yaz.",
+              "y = 4x + 1 ve y = 4x − 3 doğruları birbirini keser mi? Neden?",
+              "Eğimi 2, y-kesimi 5 olan doğrunun denklemi nedir?",
+              "x = 3 noktasında y = 2x + 1 doğrusunun y değeri kaçtır?",
+            ],
           },
           {
             id: "mat-4-4",
@@ -461,6 +771,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "mat-5",
         title: "5. Ünite: Üçgenler",
+        questions: [
+          "Dik kenarları 6 ve 8 olan dik üçgenin hipotenüsü kaç cm'dir?",
+          "Hipotenüsü 13, bir dik kenarı 5 olan üçgenin diğer dik kenarı kaçtır?",
+          "Kenar uzunlukları 3, 4, 8 olan bir üçgen çizilebilir mi? Neden?",
+          "Bir üçgende açıortay ne işe yarar?",
+          "3-4-5 üçlüsünün her elemanını 3 ile çarparak yeni bir Pisagor üçlüsü oluştur.",
+          "Bir dikdörtgenin kenarları 5 ve 12 cm ise köşegeni kaç cm'dir?",
+          "Kenarı 4√2 cm olan karenin köşegeni kaç cm'dir?",
+          "Benzer üçgenlerde açılar ve kenarlar hakkında ne söylenebilir?",
+          "Bir üçgende en büyük kenar ile en büyük açı arasındaki ilişki nedir?",
+          "Eş üçgenleri benzer üçgenlerden ayıran özellik nedir?",
+        ],
         topics: [
           {
             id: "mat-5-1",
@@ -476,9 +798,37 @@ export const MUFREDAT: MufredatSubject[] = [
           },
           {
             id: "mat-5-3",
-            title: "Pisagor Bağıntısı",
+            title: "Pisagor Teoremi",
             explanation:
-              "Dik üçgenlerde iki dik kenarın kareleri toplamı hipotenüsün karesine eşittir: a² + b² = c². Bu bağıntı yalnızca dik üçgenlerde geçerlidir; açı dik değilse eşitlik bozulur. 3-4-5, 5-12-13 ve 8-15-17 gibi Pisagor üçlülerini tanımak hesap hızını artırır.",
+              `Dik üçgende iki dik kenarın kareleri toplamı hipotenüs karesine eşittir:
+
+$$\\boxed{a^2 + b^2 = c^2}$$
+
+*$c$ = hipotenüs (dik açının karşısındaki kenar)*
+
+### Pisagor Üçlüleri (ezbere bil!)
+
+| $a$ | $b$ | $c$ |
+|---|---|---|
+| 3 | 4 | 5 |
+| 5 | 12 | 13 |
+| 8 | 15 | 17 |
+
+Bunların katları da geçerlidir: $6, 8, 10$ veya $9, 12, 15$ gibi.
+
+### Uygulamalar
+- Dikdörtgenin köşegeni: $d = \\sqrt{a^2 + b^2}$
+- Yüksekliği bulmak: $h = \\sqrt{c^2 - a^2}$`,
+            sampleQs: [
+              "Dik kenarları 6 cm ve 8 cm olan dik üçgenin hipotenüsü kaç cm'dir?",
+              "Hipotenüsü 13 cm, bir dik kenarı 5 cm olan üçgenin diğer dik kenarı kaçtır?",
+              "10, 24, 26 üçlüsü Pisagor üçlüsü müdür? Kontrol et.",
+              "Bir dikdörtgenin kenarları 5 cm ve 12 cm. Köşegeni kaç cm'dir?",
+              "Hipotenüsü 17 cm ve bir dik kenarı 8 cm olan dik üçgenin alanı kaç cm²'dir?",
+              "Kenarı 4 cm olan karenin köşegeni kaç cm'dir? (√ kullanarak yaz.)",
+              "3-4-5 üçlüsünün her elemanını 3 ile çarparak yeni bir Pisagor üçlüsü oluştur.",
+              "Dikdörtgen bir bahçenin genişliği 9 m, uzunluğu 12 m. Köşegeni kaç m'dir?",
+            ],
           },
           {
             id: "mat-5-4",
@@ -491,6 +841,18 @@ export const MUFREDAT: MufredatSubject[] = [
       {
         id: "mat-6",
         title: "6. Ünite: Dönüşüm Geometrisi ve Geometrik Cisimler",
+        questions: [
+          "Taban kenarı 4 cm, yüksekliği 10 cm olan kare prizmanın hacmi kaçtır?",
+          "Yarıçapı 3 cm, yüksekliği 7 cm olan silindirin hacmi kaçtır? (π cinsinden)",
+          "Taban kenarı 6 cm, yüksekliği 9 cm olan kare piramidin hacmi kaçtır?",
+          "Öteleme ile yansıma arasındaki fark nedir?",
+          "Bir şeklin yansımasında kenar uzunlukları korunur mu?",
+          "Silindirin yarıçapı 2 katına çıkarsa hacmi kaç katına çıkar?",
+          "Koni ve silindir aynı taban ve yüksekliğe sahipse hacim oranları kaçtır?",
+          "Taban alanı 25 cm², yüksekliği 6 cm olan prizmanın hacmi kaçtır?",
+          "(3, 2) noktasını (5, 0) vektörü ile ötelersek yeni koordinat nedir?",
+          "Silindirin yanal yüzeyi açıldığında oluşan şekil hangisidir?",
+        ],
         topics: [
           {
             id: "mat-6-1",
@@ -502,13 +864,53 @@ export const MUFREDAT: MufredatSubject[] = [
             id: "mat-6-2",
             title: "Dik Prizma ve Silindir",
             explanation:
-              "Dik prizmanın hacmi taban alanı ile yüksekliğin çarpımına eşittir; yüzey alanı ise iki tabanın ve yan yüzeylerin toplamıdır. Dik dairesel silindirde taban daire olup hacim πr²h, yanal yüzey alanı 2πrh formülleriyle hesaplanır. Açınımı (neti) görselleştirmek, hangi yüzeyin hangi formüle karşılık geldiğini anlamayı kolaylaştırır.",
+              `### Dik Prizma
+
+$$V_{\\text{prizma}} = A_{\\text{taban}} \\times h$$
+
+$$A_{\\text{yüzey}} = 2 A_{\\text{taban}} + \\text{çevre}_{\\text{taban}} \\times h$$
+
+### Dik Dairesel Silindir *(taban = daire, yarıçap $r$)*
+
+$$V_{\\text{silindir}} = \\pi r^2 h$$
+
+$$A_{\\text{yanal}} = 2\\pi r h \\qquad A_{\\text{toplam}} = 2\\pi r^2 + 2\\pi r h$$
+
+**Açınım ipucu:** Silindirin yanal yüzeyi açılınca dikdörtgen olur; genişliği $2\\pi r$, yüksekliği $h$'dir.`,
+            sampleQs: [
+              "Taban kenarı 4 cm, yüksekliği 10 cm olan kare prizmanın hacmi kaç cm³'tür?",
+              "Yarıçapı 3 cm, yüksekliği 7 cm olan silindirin hacmi kaçtır? (π cinsinden yaz.)",
+              "Bir silindirin yarıçapı 2 katına çıkarsa hacmi kaç katına çıkar?",
+              "Yanal yüzey alanı 60π cm² ve yüksekliği 5 cm olan silindirin yarıçapı kaçtır?",
+              "Taban çevresi 20 cm ve yüksekliği 8 cm olan üçgen prizmanın yanal yüzey alanı kaçtır?",
+              "Taban alanı 25 cm², yüksekliği 6 cm olan prizmanın hacmi kaç cm³'tür?",
+            ],
           },
           {
             id: "mat-6-3",
             title: "Dik Piramit ve Koni",
             explanation:
-              "Dik piramidin hacmi, aynı taban alanı ve yüksekliğe sahip prizmanın hacminin üçte birine eşittir: V = (1/3) × taban alanı × yükseklik. Aynı kural koni için de geçerlidir; V = (1/3)πr²h. Bu üçte bir ilişkisini akılda tutmak bu konudaki soruların büyük çoğunluğunu çözmeye yeter.",
+              `Piramit ve koni, eş tabanlı prizma/silindirin **üçte biri** hacmindedir.
+
+### Dik Piramit
+
+$$V_{\\text{piramit}} = \\dfrac{1}{3} \\times A_{\\text{taban}} \\times h$$
+
+### Dik Dairesel Koni *(yarıçap $r$, yükseklik $h$)*
+
+$$V_{\\text{koni}} = \\dfrac{1}{3} \\pi r^2 h$$
+
+**Şunu aklında tut:** aynı $r$ ve $h$ için silindir hacmini bul, üçe böl → koni hacmi.
+
+**Yükseklik, eğik yüzeyin uzunluğu, yarıçap** arasında Pisagor teoremi geçerlidir: $l^2 = r^2 + h^2$`,
+            sampleQs: [
+              "Taban kenarı 6 cm, yüksekliği 9 cm olan kare piramidin hacmi kaç cm³'tür?",
+              "Yarıçapı 5 cm, yüksekliği 12 cm olan koninin hacmi kaçtır? (π cinsinden yaz.)",
+              "Koni ve silindir aynı taban alanına ve yüksekliğe sahipse hacim oranları kaçtır?",
+              "Yarıçapı 2 katına, yüksekliği yarıya indirilen bir koninin hacmi değişir mi?",
+              "Hacmi 48 cm³ ve taban alanı 12 cm² olan piramidin yüksekliği kaç cm'dir?",
+              "Koni ve küre arasındaki fark nedir? Kendi cümlelerinle açıkla.",
+            ],
           },
         ],
       },
@@ -583,13 +985,59 @@ export const MUFREDAT: MufredatSubject[] = [
             id: "fen-3-1",
             title: "Katı Basıncı",
             explanation:
-              "Katı basıncı, yüzeye dik uygulanan kuvvetin o yüzeyin alanına bölümüdür (P = F/A); alan küçüldükçe basınç artar. Bu yüzden sivri uçlu çivi az kuvvetle tahtaya girer çünkü tüm kuvvet çok küçük bir alana uygulanır. Karda yürüyen birinin ayağına takacağı kar ayakkabısı kuvveti geniş alana yayarak batmayı engeller.",
+              `$$\\boxed{P = \\dfrac{F}{A}}$$
+
+| Sembol | Anlamı | Birimi |
+|---|---|---|
+| $P$ | Basınç | Pascal (Pa) |
+| $F$ | Kuvvet | Newton (N) |
+| $A$ | Yüzey Alanı | m² |
+
+**Alan küçülür → basınç artar.** Bu yüzden:
+- Sivri çivi kolayca girer (küçük $A$, büyük $P$)
+- Kar ayakkabısı batmayı önler (büyük $A$, küçük $P$)
+
+**LGS sorusu tipi:** Aynı ağırlıktaki iki cisimden hangisi daha fazla basınç uygular? → Taban alanı küçük olanı!`,
+            sampleQs: [
+              "200 N kuvvet 0,5 m² alana uygulanırsa basınç kaç Pa'dır?",
+              "Basıncı azaltmak için ne yapmalısın? Kuvvet sabit ise.",
+              "Sivri uçlu kalem neden düz uçluya göre kağıdı daha kolay deler?",
+              "Karda yürüyen biri ayağına kar ayakkabısı takarsa basınç artar mı azalır mı?",
+              "Basıncı iki katına çıkarmak için yüzey alanını ne yapman gerekir?",
+              "60 N ağırlıklı bir cisim 0,3 m² alana basıyor. Basınç kaç Pa'dır?",
+              "Bir bıçak ve tahta kaşık aynı kuvvetle ekmeğe sürülürse hangisi daha kolay keser? Neden?",
+              "Astronotların Ay'da ağırlıkları 6'da 1'e düşer. Ayakkabı tabanı aynı kalırsa basınç kaç kat değişir?",
+            ],
           },
           {
             id: "fen-3-2",
             title: "Sıvı Basıncı",
             explanation:
-              "Sıvı basıncı; sıvının yoğunluğuna, yerçekimine ve derinliğe bağlıdır (P = ρgh). Sıvı basıncı yöne bağlı değildir; aynı derinlikte her yönde eşit basınç uygulanır. Bağlı kaplar prensibine göre birbirine bağlı kaplardaki aynı yoğunluktaki sıvı düzeyi her zaman eşit olur.",
+              `$$\\boxed{P = \\rho \\cdot g \\cdot h}$$
+
+| Sembol | Anlamı |
+|---|---|
+| $\\rho$ (rho) | Sıvı yoğunluğu (kg/m³) |
+| $g$ | Yerçekimi ivmesi (≈ 10 m/s²) |
+| $h$ | Sıvıdaki derinlik (m) |
+
+**Temel Özellikler:**
+- Sıvı basıncı **yöne bağlı değildir**; aynı derinlikte her yönde eşit.
+- Sıvı basıncı kabın şekline bağlı **değildir**.
+- **Bağlı kaplar:** Aynı yoğunluktaki sıvı düzeyi her kolda eşit olur.
+
+**Örnek:** Deniz suyu ($\\rho = 1025$ kg/m³) 10 m derinlikte:
+$P = 1025 \\times 10 \\times 10 = 102\\,500$ Pa`,
+            sampleQs: [
+              "Yoğunluğu 1000 kg/m³ olan sıvının 5 m derinliğindeki basıncı kaç Pa'dır? (g = 10 m/s²)",
+              "Bağlı kaplarda sıvı seviyeleri ne zaman eşit olur?",
+              "Sıvı basıncı kabın şekline bağlı mıdır? Açıkla.",
+              "Derinlik 3 katına çıkarsa sıvı basıncı kaç kat artar?",
+              "Tatlı su (1000 kg/m³) ile tuzlu su (1025 kg/m³) aynı derinlikte. Hangisinin basıncı daha büyük? Neden?",
+              "Deniz tabanındaki 200 m derinlikte su basıncını hesapla. (ρ = 1000 kg/m³, g = 10)",
+              "Bir U borusu var; sol kola su sağ kola yağ (daha hafif) eklendi. Yağ tarafı mı su tarafı mı yüksekte durur?",
+              "Sıvı basıncı ile katı basıncı arasındaki en önemli fark nedir?",
+            ],
           },
           {
             id: "fen-3-3",
@@ -649,7 +1097,29 @@ export const MUFREDAT: MufredatSubject[] = [
             id: "fen-5-3",
             title: "İş, Güç ve Verimlilik",
             explanation:
-              "Fizikte iş = kuvvet × kuvvet doğrultusunda alınan yol formülüyle hesaplanır; kuvvet ve yol dik açılıysa iş sıfırdır. Güç, birim zamanda yapılan iştir (P = W/t); birimi watt'tır. Basit makineler iş miktarını değiştirmez; sadece kuvveti, mesafeyi ya da yönü değiştirir ve gerçek makinelerde sürtünme nedeniyle verim her zaman %100'ün altındadır.",
+              `$$\\boxed{W = F \\cdot d} \\quad \\text{(Joule)}$$
+
+*Kuvvet ve yol **dik** ise iş sıfırdır — örneğin çanta taşıyan biri yürürken iş yapmaz (ağırlık ↕, yol →).*
+
+$$\\boxed{P = \\dfrac{W}{t}} \\quad \\text{(Watt)}$$
+
+**Verimlilik:**
+
+$$\\eta = \\dfrac{W_{\\text{faydalı}}}{W_{\\text{toplam}}} \\times 100\\%$$
+
+Gerçek makinelerde $\\eta < 100\\%$, çünkü bir kısım enerji sürtünme ile ısıya dönüşür.
+
+**Basit makine altın kuralı:** İş kazanamayız — kuvvetten kazanırsak mesafeden kaybederiz.`,
+            sampleQs: [
+              "50 N kuvvetle 4 m yol alındığında yapılan iş kaç J'dir?",
+              "Elinde çanta taşıyarak yatay düzlemde yürüyen biri iş yapar mı? Neden?",
+              "1000 J iş 5 saniyede yapılırsa güç kaç W'tır?",
+              "Verimliliği %80 olan bir makine 400 J faydalı iş üretmek için toplam kaç J enerji tüketir?",
+              "Kuvvet ve hareket yönü dik açı yapıyorsa iş neden sıfırdır?",
+              "100 W gücündeki ampul 1 saatte kaç J enerji tüketir?",
+              "Bir atlet 60 kg ağırlığını 2 m yukarı kaldırıyor. Yaptığı iş kaç J'dir? (g = 10)",
+              "Basit makineler iş miktarını değiştirir mi? Neyi değiştirir?",
+            ],
           },
         ],
       },

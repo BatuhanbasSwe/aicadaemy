@@ -185,8 +185,20 @@ function Topbar({
   onOpenProfile: () => void;
 }) {
   const initial = username?.[0]?.toUpperCase() ?? "S";
+  const signOutLocal = useGameStore((s) => s.signOutLocal);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  async function handleSignOut() {
+    setProfileOpen(false);
+    try { await supabase.auth.signOut({ scope: "local" }); } catch { /* */ }
+    try { await supabase.auth.signOut(); } catch { /* */ }
+    signOutLocal();
+    try { localStorage.removeItem("lgs-kasifi-store"); } catch { /* */ }
+    window.location.href = "/login";
+  }
+
   return (
-    <header className="h-14 px-6 flex items-center justify-between border-b border-ink-200 bg-paper/80 backdrop-blur-sm shrink-0">
+    <header className="h-14 px-6 flex items-center justify-between border-b border-ink-200 bg-paper/80 backdrop-blur-sm shrink-0 relative z-10">
       <div>
         <h1 className="font-display font-bold text-[18px] tracking-tight text-ink-900 leading-none">{title}</h1>
         {subtitle && <div className="text-[11px] text-ink-500 mt-0.5">{subtitle}</div>}
@@ -198,29 +210,48 @@ function Topbar({
         </div>
         <button
           onClick={onOpenNotifications}
-          title="Mesajlar (yakında)"
-          className="w-9 h-9 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition flex items-center justify-center text-ink-700"
-        >
-          <Mail className="w-4 h-4" />
-        </button>
-        <button
-          onClick={onOpenNotifications}
           title="Bildirimler"
           className="relative w-9 h-9 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition flex items-center justify-center text-ink-700"
         >
           <Bell className="w-4 h-4" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-coral-500" />
         </button>
-        <button
-          onClick={onOpenProfile}
-          className="ml-1 flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition"
-        >
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold text-xs">{initial}</div>
-          <div className="text-left leading-tight hidden sm:block">
-            <div className="text-[11.5px] font-semibold text-ink-900">{username}</div>
-            <div className="text-[9.5px] text-ink-500">Kâşif</div>
-          </div>
-        </button>
+
+        {/* Profile dropdown */}
+        <div className="relative ml-1">
+          <button
+            onClick={() => setProfileOpen((v) => !v)}
+            className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-xl bg-white border border-ink-200 hover:bg-ink-100 transition"
+          >
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white font-bold text-xs">{initial}</div>
+            <div className="text-left leading-tight hidden sm:block">
+              <div className="text-[11.5px] font-semibold text-ink-900">{username}</div>
+              <div className="text-[9.5px] text-ink-500">Kâşif</div>
+            </div>
+          </button>
+
+          {profileOpen && (
+            <>
+              {/* Backdrop to close */}
+              <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)} />
+              <div className="absolute right-0 top-full mt-2 w-44 bg-white border border-ink-200 rounded-xl shadow-pop z-20 overflow-hidden">
+                <button
+                  onClick={() => { setProfileOpen(false); onOpenProfile(); }}
+                  className="w-full px-4 py-2.5 text-left text-[13px] text-ink-700 hover:bg-ink-100 transition flex items-center gap-2"
+                >
+                  <User className="w-4 h-4" /> Profil
+                </button>
+                <div className="h-px bg-ink-200 mx-3" />
+                <button
+                  onClick={handleSignOut}
+                  className="w-full px-4 py-2.5 text-left text-[13px] text-coral-600 font-semibold hover:bg-coral-50 transition flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" /> Hesaptan Çık
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -264,6 +295,37 @@ function CompactStatCard({
 /* ══════════════════════════════════════════════════════════
    HOME VIEW — fits in viewport, no scroll
    ══════════════════════════════════════════════════════════ */
+function ComingSoonBanner({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div className="shrink-0 mx-0 rounded-2xl border border-brand-300/50 bg-gradient-to-r from-brand-50 to-sky-50 px-4 py-3 flex items-start gap-3">
+      <div className="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center shrink-0 mt-0.5">
+        <Sparkles className="w-4 h-4 text-white" strokeWidth={2.5} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-brand-600 bg-brand-100 px-2 py-0.5 rounded-full">Çok Yakında</span>
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-[12.5px] text-ink-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" />
+            <span><strong>Kurum &amp; Öğrenci Takip Sistemi</strong> — Okullar tüm öğrencilerin ilerlemesini tek panelden izleyebilecek</span>
+          </div>
+          <div className="flex items-center gap-2 text-[12.5px] text-ink-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
+            <span><strong>Veli &amp; Öğrenci Takip Sistemi</strong> — Veliler çocuklarının günlük çalışma raporlarını anlık görebilecek</span>
+          </div>
+        </div>
+      </div>
+      <button
+        onClick={onDismiss}
+        className="shrink-0 text-ink-400 hover:text-ink-700 transition mt-0.5"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 function HomeView({
   onGoToTasks,
   externalMessage,
@@ -278,7 +340,6 @@ function HomeView({
   const score = useGameStore((s) => s.score);
   const accuracy = score.lgsAnswered > 0
     ? Math.round((score.lgsCorrect / score.lgsAnswered) * 100) : 0;
-
   return (
     <div className="h-full flex flex-col px-6 py-3 gap-3 overflow-hidden">
       {/* Compact stat cards */}
@@ -1036,13 +1097,20 @@ function SignOutButton() {
   async function handleSignOut() {
     if (busy) return;
     setBusy(true);
-    try {
-      await supabaseSignOut();
-    } catch {
-      /* yine de local'i temizle */
-    }
+
+    // 1) Local Supabase session'ı hemen sil (network gerekmez).
+    //    Bu sayede AuthBootstrap'ın getSession() çağrısı anında null döner.
+    try { await supabase.auth.signOut({ scope: "local" }); } catch { /* */ }
+
+    // 2) Sunucu tarafında da oturumu kapat (başarısız olsa sorun değil).
+    try { await supabaseSignOut(); } catch { /* */ }
+
+    // 3) Zustand store + persist storage temizle.
     signOutLocal();
-    router.replace("/login");
+    try { localStorage.removeItem("lgs-kasifi-store"); } catch { /* */ }
+
+    // 4) Tam sayfa yenileme ile /login'e git (tüm React state sıfırlanır).
+    window.location.href = "/login";
   }
 
   return (
@@ -1797,6 +1865,7 @@ export default function ChatPage() {
   const [externalMessage, setExternalMessage] = useState<string | null>(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [chatKey, setChatKey] = useState(0);
+  const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
     if (user !== null) return;
@@ -1864,6 +1933,13 @@ export default function ChatPage() {
           onOpenNotifications={() => setNotificationsOpen(true)}
           onOpenProfile={() => setPage("profile")}
         />
+
+        {/* Coming soon banner — tüm sekmelerde görünür */}
+        {!bannerDismissed && (
+          <div className="shrink-0 px-6 pt-3">
+            <ComingSoonBanner onDismiss={() => setBannerDismissed(true)} />
+          </div>
+        )}
 
         {/* Each view manages its own scroll (or none for home) */}
         <div className="flex-1 min-h-0 overflow-hidden pb-14 md:pb-0">

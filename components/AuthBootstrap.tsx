@@ -19,10 +19,17 @@ export default function AuthBootstrap() {
   useEffect(() => {
     let cancelled = false;
 
+    // Signout sürecinde (localStorage temizlenmiş) yeniden yükleme yapmayı engelle
+    const storeKey = "lgs-kasifi-store";
+    const hasStore = () => {
+      try { return !!localStorage.getItem(storeKey); } catch { return false; }
+    };
+
     (async () => {
       const { data } = await supabase.auth.getSession();
       const userId = data.session?.user?.id;
-      if (!userId || cancelled) return;
+      // Session var ama store yoksa → logout süreci, yeniden yükleme
+      if (!userId || cancelled || !hasStore()) return;
       try {
         const profile = await fetchProfile(userId);
         if (profile && !cancelled) loadFromProfile(profile);
@@ -37,6 +44,7 @@ export default function AuthBootstrap() {
         return;
       }
       if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        if (!hasStore()) return; // logout sürecinde yeniden bağlama
         try {
           const profile = await fetchProfile(session.user.id);
           if (profile) loadFromProfile(profile);

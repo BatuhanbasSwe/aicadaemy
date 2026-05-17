@@ -1,7 +1,7 @@
 "use client";
 import { useGameStore } from "@/lib/store/useGameStore";
-import { Crown, UserPlus, X, Check, Flame } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Crown, UserPlus, X, Check, Flame, MessageCircle, Send } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import {
   FAKE_FRIENDS,
   simulateFriendProgress,
@@ -22,7 +22,121 @@ interface RowData {
   isMe: boolean;
 }
 
-function FriendRow({ f, rank }: { f: RowData; rank: number }) {
+interface ChatMsg { text: string; fromMe: boolean; ts: number; }
+
+const FAKE_OPENERS: Record<string, string> = {
+  f1: "Selamm! Bugün nasıl çalıştın? 📚",
+  f2: "Seni liderlik tablosunda az fark geçtim 😄 Dikkat et!",
+  f3: "Merak Ağacın ne kadar büyüdü?",
+  f4: "Bugün LGS soruları çözdüm, sen neredeydin?",
+  f5: "Kahit Arf'la çalıştım bugün, inanılmazdı!",
+};
+const DEFAULT_OPENER = "Selam! Bugün çalıştın mı? 👋";
+
+const FAKE_REPLIES = [
+  "Harika! Ben de az önce çalışmayı bitirdim 📚",
+  "Üslü sayılardan çok soru çözdüm bugün!",
+  "Seninle yarışmak çok motive edici 😊",
+  "Hocayla ders anlatımı çok işime yaradı.",
+  "Bugün matematik ünitesinde 8/10 yaptım!",
+  "Sen kaç soru çözdün?",
+  "LGS'ye birlikte hazırlanmak çok daha kolay!",
+  "Merak Ağacım da büyüyor yavaş yavaş 🌱",
+  "Aziz Sancar basıncı çok güzel anlattı!",
+  "Sıralamada yakında seni geçeceğim 😏",
+];
+
+/* ── Chat panel ──────────────────────────────────────────── */
+function ChatPanel({
+  friend,
+  messages,
+  input,
+  onInput,
+  onSend,
+  onClose,
+}: {
+  friend: RowData;
+  messages: ChatMsg[];
+  input: string;
+  onInput: (v: string) => void;
+  onSend: () => void;
+  onClose: () => void;
+}) {
+  const bottomRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  return (
+    <div className="fixed bottom-6 right-6 w-80 bg-white rounded-2xl shadow-pop border border-ink-200 z-50 flex flex-col" style={{ maxHeight: 440 }}>
+      {/* Header */}
+      <div className="flex items-center gap-2.5 px-4 py-3 bg-ink-900 rounded-t-2xl shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-ink-700 flex items-center justify-center text-lg shrink-0">
+          {friend.avatar}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-[13px] text-white truncate">{friend.username}</div>
+          <div className="text-[10px] text-ink-400 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-mint-500 inline-block" /> Çevrimiçi
+          </div>
+        </div>
+        <button onClick={onClose} className="text-ink-400 hover:text-white transition ml-1">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 nice-scroll" style={{ minHeight: 220, maxHeight: 300 }}>
+        {messages.map((m, i) => (
+          <div key={i} className={`flex ${m.fromMe ? "justify-end" : "justify-start"}`}>
+            {!m.fromMe && (
+              <div className="w-6 h-6 rounded-lg bg-ink-100 flex items-center justify-center text-sm shrink-0 mr-1.5 mt-0.5">
+                {friend.avatar}
+              </div>
+            )}
+            <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-[12.5px] leading-relaxed ${
+              m.fromMe
+                ? "bg-brand-500 text-white rounded-tr-sm"
+                : "bg-ink-100 text-ink-900 rounded-tl-sm"
+            }`}>
+              {m.text}
+            </div>
+          </div>
+        ))}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div className="flex items-center gap-2 px-3 py-2.5 border-t border-ink-200 shrink-0">
+        <input
+          value={input}
+          onChange={e => onInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && onSend()}
+          placeholder="Mesaj yaz..."
+          className="flex-1 px-3 py-2 rounded-xl border border-ink-200 text-[12px] text-ink-900 bg-paper focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500/20 transition"
+        />
+        <button
+          onClick={onSend}
+          disabled={!input.trim()}
+          className="w-8 h-8 rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-40 flex items-center justify-center text-white transition"
+        >
+          <Send className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Friend row ──────────────────────────────────────────── */
+function FriendRow({
+  f,
+  rank,
+  onChat,
+}: {
+  f: RowData;
+  rank: number;
+  onChat?: () => void;
+}) {
   const rankColor =
     rank === 1 ? "bg-sun-500 text-white" :
     rank === 2 ? "bg-ink-300 text-ink-900" :
@@ -52,17 +166,44 @@ function FriendRow({ f, rank }: { f: RowData; rank: number }) {
           <span>{f.streak} gün</span>
         </div>
       </div>
-      <div className="text-right shrink-0">
-        <div className="font-display font-bold text-[14px] text-ink-900 tabular-nums">
-          {calcScore(f.nodes, f.lgsCorrect)}
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="text-right">
+          <div className="font-display font-bold text-[14px] text-ink-900 tabular-nums">
+            {calcScore(f.nodes, f.lgsCorrect)}
+          </div>
+          <div className="text-[10px] text-ink-400">{f.nodes}🌿 {f.lgsCorrect}✓</div>
         </div>
-        <div className="text-[10px] text-ink-400">{f.nodes}🌿 {f.lgsCorrect}✓</div>
+        {!f.isMe && onChat && (
+          <button
+            onClick={onChat}
+            className="w-7 h-7 rounded-lg hover:bg-brand-50 flex items-center justify-center text-ink-400 hover:text-brand-600 transition"
+            title="Mesaj gönder"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
 const INVITE_RE = /^KAS-[A-Z0-9]{6}$/;
+
+const EXTRA_AVATARS = ["🐶","🐱","🦊","🐸","🦋","🐝","🌟","🎯","🦄","🐧","🦁","🐯"];
+const EXTRA_NAMES   = ["Yıldız","Kaplan","Kartal","Aslan","Panda","Koala","Şimşek","Fırtına","Bulut","Deniz","Çınar","Bahar"];
+
+function codeToFriend(code: string): RowData {
+  const hash = code.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return {
+    id: code,
+    username: EXTRA_NAMES[hash % EXTRA_NAMES.length] + "_" + code.slice(-3),
+    avatar: EXTRA_AVATARS[hash % EXTRA_AVATARS.length],
+    nodes: 3 + (hash % 28),
+    lgsCorrect: 1 + (hash % 14),
+    streak: 1 + (hash % 10),
+    isMe: false,
+  };
+}
 
 export default function FriendList() {
   const user      = useGameStore((s) => s.user);
@@ -83,7 +224,12 @@ export default function FriendList() {
   const [codeInput, setCodeInput] = useState("");
   const [codeErr,   setCodeErr]   = useState<string | null>(null);
   const [toast,     setToast]     = useState<string | null>(null);
-  const [addedIds,  setAddedIds]  = useState<string[]>([]);
+  const [addedFriends, setAddedFriends] = useState<RowData[]>([]);
+
+  /* ── Chat state ── */
+  const [chatFriendId, setChatFriendId] = useState<string | null>(null);
+  const [allMessages,  setAllMessages]  = useState<Record<string, ChatMsg[]>>({});
+  const [chatInput,    setChatInput]    = useState("");
 
   const meScore = { nodes: gameScore.nodesOpened, lgsCorrect: gameScore.lgsCorrect };
 
@@ -92,23 +238,57 @@ export default function FriendList() {
       const sc = friendScores[f.id] ?? f.baseScore;
       return { id: f.id, username: f.username, avatar: f.avatar, nodes: sc.nodes, lgsCorrect: sc.lgsCorrect, streak: 12, isMe: false };
     }),
+    ...addedFriends,
     { id: "me", username: user?.username ?? "Sen", avatar: "⭐", nodes: meScore.nodes, lgsCorrect: meScore.lgsCorrect, streak: 1, isMe: true },
   ].sort((a, b) => calcScore(b.nodes, b.lgsCorrect) - calcScore(a.nodes, a.lgsCorrect));
 
   const motivationMsg = buildLeaderboardLine(meScore, friendScores);
 
+  function openChat(friendId: string) {
+    setChatFriendId(friendId);
+    setChatInput("");
+    if (!allMessages[friendId]) {
+      const opener = FAKE_OPENERS[friendId] ?? DEFAULT_OPENER;
+      setAllMessages(prev => ({
+        ...prev,
+        [friendId]: [{ text: opener, fromMe: false, ts: Date.now() }],
+      }));
+    }
+  }
+
+  function sendMessage() {
+    if (!chatFriendId || !chatInput.trim()) return;
+    const text = chatInput.trim();
+    setChatInput("");
+    setAllMessages(prev => ({
+      ...prev,
+      [chatFriendId]: [...(prev[chatFriendId] ?? []), { text, fromMe: true, ts: Date.now() }],
+    }));
+    const delay = 800 + Math.random() * 1200;
+    const reply = FAKE_REPLIES[Math.floor(Math.random() * FAKE_REPLIES.length)];
+    setTimeout(() => {
+      setAllMessages(prev => ({
+        ...prev,
+        [chatFriendId!]: [...(prev[chatFriendId!] ?? []), { text: reply, fromMe: false, ts: Date.now() }],
+      }));
+    }, delay);
+  }
+
   function handleAdd() {
     const code = codeInput.trim().toUpperCase();
     if (!INVITE_RE.test(code)) { setCodeErr("Geçersiz format. KAS-XXXXXX şeklinde olmalı."); return; }
     if (code === user?.inviteCode) { setCodeErr("Kendi davet kodunu giremezsin!"); return; }
-    if (addedIds.includes(code)) { setCodeErr("Bu kodu daha önce ekledin."); return; }
-    setAddedIds((prev) => [...prev, code]);
+    if (addedFriends.some(f => f.id === code)) { setCodeErr("Bu kodu daha önce ekledin."); return; }
+    const newFriend = codeToFriend(code);
+    setAddedFriends(prev => [...prev, newFriend]);
     setShowModal(false);
     setCodeInput("");
     setCodeErr(null);
-    setToast(`${code.slice(4)} eklendi! 🎉`);
+    setToast(`${newFriend.username} eklendi! 🎉`);
     setTimeout(() => setToast(null), 3000);
   }
+
+  const chatFriend = rows.find(r => r.id === chatFriendId);
 
   return (
     <div className="bg-white border border-ink-200 rounded-2xl shadow-card overflow-hidden">
@@ -126,7 +306,14 @@ export default function FriendList() {
       </div>
 
       <div className="divide-y divide-ink-200">
-        {rows.map((f, i) => <FriendRow key={f.id} f={f} rank={i + 1} />)}
+        {rows.map((f, i) => (
+          <FriendRow
+            key={f.id}
+            f={f}
+            rank={i + 1}
+            onChat={!f.isMe ? () => openChat(f.id) : undefined}
+          />
+        ))}
       </div>
 
       {motivationMsg && (
@@ -135,6 +322,7 @@ export default function FriendList() {
         </div>
       )}
 
+      {/* Invite modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-pop border border-ink-200 w-full max-w-sm p-6">
@@ -167,6 +355,18 @@ export default function FriendList() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Chat panel */}
+      {chatFriend && (
+        <ChatPanel
+          friend={chatFriend}
+          messages={allMessages[chatFriend.id] ?? []}
+          input={chatInput}
+          onInput={setChatInput}
+          onSend={sendMessage}
+          onClose={() => setChatFriendId(null)}
+        />
       )}
 
       {toast && (
