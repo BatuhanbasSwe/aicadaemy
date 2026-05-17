@@ -314,6 +314,10 @@ function ComingSoonBanner({ onDismiss }: { onDismiss: () => void }) {
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0" />
             <span><strong>Veli &amp; Öğrenci Takip Sistemi</strong> — Veliler çocuklarının günlük çalışma raporlarını anlık görebilecek</span>
           </div>
+          <div className="flex items-center gap-2 text-[12.5px] text-ink-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+            <span><strong>Forum</strong> — Öğrenciler soru paylaşacak, birlikte tartışacak ve dahilerle topluca sohbet edebilecek</span>
+          </div>
         </div>
       </div>
       <button
