@@ -94,6 +94,146 @@ export const LGS_QUESTIONS: LgsQuestion[] = [
     explanation:
       'Mudanya Ateşkes Antlaşması, Sakarya\'dan sonra değil, Büyük Taarruz\'un kazanılmasının ardından 11 Ekim 1922\'de imzalanmıştır. Diğer üç sonuç doğrudur.',
   },
+
+  // ===== FEN BİLİMLERİ (2) — Aziz Sancar =====
+
+  {
+    id: 'fen_2023_dna_kromozom',
+    year: 2023,
+    subject: 'fen',
+    unit: 'DNA ve Genetik Kod',
+    difficulty: 'kolay',
+    question:
+      'İnsan vücut hücrelerinde bulunan kromozom sayısı kaçtır?',
+    options: ['23', '46', '48', '92'],
+    correctIndex: 1,
+    explanation:
+      'İnsan vücut hücrelerinde 46 kromozom (23 çift) bulunur. Eşey hücrelerinde (sperm ve yumurta) ise 23 kromozom vardır; döllenmede tekrar 46\'ya ulaşılır.',
+  },
+
+  {
+    id: 'fen_2024_basinc',
+    year: 2024,
+    subject: 'fen',
+    unit: 'Basınç',
+    difficulty: 'orta',
+    question:
+      'Düz bir zemine bırakılan ağır bir bloğun yaptığı basıncı azaltmak için aşağıdakilerden hangisi yapılmalıdır?',
+    options: [
+      'Bloğun altına daha küçük bir yüzey koy',
+      'Bloğun üzerine ek ağırlık ekle',
+      'Bloğun taban yüzeyini genişlet',
+      'Bloğu daha pürüzlü bir zemine taşı',
+    ],
+    correctIndex: 2,
+    explanation:
+      'Basınç = Kuvvet / Alan formülüne göre, uygulanan kuvvet (ağırlık) sabitken taban alanı artırılırsa basınç azalır. Yüzeyi genişletmek doğru seçenektir.',
+  },
+
+  // ===== TÜRKÇE (2) — Yunus Emre =====
+
+  {
+    id: 'tur_2023_fiilimsi',
+    year: 2023,
+    subject: 'turkce',
+    unit: 'Fiilimsiler',
+    difficulty: 'kolay',
+    question:
+      '"Koşarak geldi" cümlesindeki altı çizili sözcüğün fiilimsi türü hangisidir?',
+    options: ['İsim-fiil', 'Sıfat-fiil', 'Zarf-fiil', 'Eylem'],
+    correctIndex: 2,
+    explanation:
+      '"Koşarak" sözcüğü fiilden türemiş, cümlede zarf görevi yapan bir fiilimsedir; bu nedenle zarf-fiil (bağ-fiil) olarak adlandırılır. "-arak/-erek" eki zarf-fiil ekidir.',
+  },
+
+  {
+    id: 'tur_2024_cumle_anlam',
+    year: 2024,
+    subject: 'turkce',
+    unit: 'Cümlede Anlam',
+    difficulty: 'orta',
+    question:
+      '"Bu soruyu çözmek benim için çok kolaydı." cümlesinde aşağıdakilerden hangisi vardır?',
+    options: ['Abartma (mübalağa)', 'Kişileştirme (teşhis)', 'Dolaylı anlatım', 'Öznel yargı'],
+    correctIndex: 3,
+    explanation:
+      '"Çok kolay" ifadesi kişiden kişiye farklılık gösteren bir değerlendirmedir; bu nedenle cümle öznel (kişisel) yargı içerir. Nesnel yargılar ölçülebilir, kanıtlanabilir bilgiler içerir.',
+  },
+
+  // ===== DİN KÜLTÜRÜ (2) — Mevlana =====
+
+  {
+    id: 'din_2023_zekat',
+    year: 2023,
+    subject: 'din',
+    unit: 'Zekât ve Sadaka',
+    difficulty: 'kolay',
+    question:
+      'İslam\'ın beş şartından biri olan zekât kimler tarafından verilmekle yükümlüdür?',
+    options: [
+      'Her Müslüman tarafından',
+      'Belirli miktarda mala sahip, akıllı ve ergin Müslümanlar tarafından',
+      'Yalnızca erkek Müslümanlar tarafından',
+      'Devlet tarafından zorunlu olarak toplanır',
+    ],
+    correctIndex: 1,
+    explanation:
+      'Zekât; nisap miktarı (belirli bir servet sınırı) kadar veya daha fazla mala sahip olan, akıl sağlığı yerinde ve ergin (buluğa ermiş) Müslümanlar tarafından verilmesi farz olan bir ibadettir.',
+  },
+
+  {
+    id: 'din_2024_hac',
+    year: 2024,
+    subject: 'din',
+    unit: 'Hac',
+    difficulty: 'orta',
+    question:
+      'Hac ibadetine ilişkin aşağıdakilerden hangisi yanlıştır?',
+    options: [
+      'Hac, İslam\'ın beş şartından biridir',
+      'Hac; yalnızca Mekke\'de, belirli günlerde yapılır',
+      'Gücü yeten her Müslüman ömründe bir kez hacca gitmekle yükümlüdür',
+      'Hac ibadeti her ay tekrarlanabilir',
+    ],
+    correctIndex: 3,
+    explanation:
+      'Hac ibadeti, belirli zaman diliminde (Zilhicce ayı) yapılır; her ay tekrarlanamaz. Hac; mali ve bedeni güce sahip, akıllı ve ergin Müslümanların ömründe bir kez yapması gereken farzdır.',
+  },
+
+  // ===== İNGİLİZCE (2) — Shakespeare =====
+
+  {
+    id: 'ing_2023_simple_past',
+    year: 2023,
+    subject: 'ingilizce',
+    unit: 'Teen Life / Simple Past Tense',
+    difficulty: 'kolay',
+    question:
+      'Which sentence is correct in Simple Past Tense?',
+    options: [
+      'She go to school yesterday.',
+      'She goed to school yesterday.',
+      'She went to school yesterday.',
+      'She goes to school yesterday.',
+    ],
+    correctIndex: 2,
+    explanation:
+      '"Go" fiilinin geçmiş zaman (simple past) biçimi "went"tir — düzensiz (irregular) bir fiildir. "Goed" veya "go/goes" kullanımı yanlıştır. Türkçesi: "O dün okula gitti."',
+  },
+
+  {
+    id: 'ing_2024_modals',
+    year: 2024,
+    subject: 'ingilizce',
+    unit: 'Friendship / Modal Verbs',
+    difficulty: 'orta',
+    question:
+      'Choose the best modal verb: "You look tired. You _____ get some rest."',
+    options: ['must not', 'should', 'can\'t', 'will'],
+    correctIndex: 1,
+    explanation:
+      '"Should" tavsiye bildiren bir modal fiildir. "You should get some rest" → "Biraz dinlenmelisin" anlamına gelir. "Must not" yasak, "can\'t" imkânsızlık, "will" gelecek zaman için kullanılır.',
+  },
 ];
 
 export function getQuestionById(id: string): LgsQuestion | undefined {
